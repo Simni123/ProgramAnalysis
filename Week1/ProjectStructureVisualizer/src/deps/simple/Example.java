@@ -1,12 +1,12 @@
-package dtu.deps.simple;
+package deps.simple;
 
-import dtu.deps.util.Utils;
+import deps.util.Utils;
 
 // import some.other.Class;
 
 // Known Dependencies
-// -> dtu.deps.simple.Other
-// -> dtu.deps.util.Utils
+// -> deps.simple.Other
+// -> deps.util.Utils
 // -> java.lang.String
 
 /**

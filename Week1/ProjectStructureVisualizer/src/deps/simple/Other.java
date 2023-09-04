@@ -1,4 +1,4 @@
-package dtu.deps.simple;
+package deps.simple;
 
 // Known Dependencies
 // -> dtu.deps.util.Utils
@@ -7,6 +7,6 @@ package dtu.deps.simple;
 public class Other {
 
     public static void main(String[] args) {
-        dtu.deps.util.Utils.printHello();
+        deps.util.Utils.printHello();
     }
 }
