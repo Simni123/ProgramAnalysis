@@ -47,8 +47,6 @@ def main():
         for filename in files:
             if is_java_file(filename):
                 javaFiles.append(os.path.join(root, filename))
-    
-    print(javaFiles)
 
     allTrees = []
     for file in javaFiles:
@@ -58,6 +56,9 @@ def main():
 
     for tree in allTrees:
         print(TypeIdentifiers().visit(tree.root_node))
+    
+
+    
     #Printer().visit(allTrees[0].root_node)
 
 
