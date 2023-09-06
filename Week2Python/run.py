@@ -1,5 +1,7 @@
 import os
 import fnmatch
+import graphviz
+import re
 
 from tree_sitter import Language, Parser
 FILE = "./languages.so" # the ./ is important
@@ -29,7 +31,38 @@ class TypeIdentifiers(SyntaxFold):
         return set().union(*results)
     def type_identifier(self, node, results):
         return {node.text}
+    
+class ClassDeclaration(SyntaxFold):
+    def default(self, node, results):
+        return set().union(*results)
+    def method_declaration(self, node, results):
+        return {node.text}
+    
+def extract_class_names(node):
+    if node.type == 'class_declaration':
+        # Find the identifier inside the class_declaration node
+        for child_node in node.children:
+            if child_node.type == 'identifier':
+                return child_node.text
+    # Recursively check child nodes
+    for child_node in node.children:
+        class_name = extract_class_names(child_node)
+        if class_name:
+            return class_name
+    return None
 
+def extract_field_names(node):
+    if node.type == 'field_declaration':
+        # Find the identifier inside the class_declaration node
+        for child_node in node.children:
+            if child_node.type == 'identifier':
+                return child_node.text
+    # Recursively check child nodes
+    for child_node in node.children:
+        class_name = extract_class_names(child_node)
+        if class_name:
+            return class_name
+    return None
 
 def is_java_file(filename):
     return fnmatch.fnmatch(filename, '*.java')
@@ -37,6 +70,7 @@ def is_java_file(filename):
 def main():
     directory = './deps'
     max_depth = 10
+    graph = graphviz.Digraph()
     javaFiles = []
 
     for root, _, files in os.walk(directory):
@@ -51,12 +85,24 @@ def main():
     allTrees = []
     for file in javaFiles:
         with open(file, "rb") as f:
-            print(file)
             allTrees.append(parser.parse(f.read()))
 
     for tree in allTrees:
-        print(TypeIdentifiers().visit(tree.root_node))
+        print(extract_field_names(tree.root_node))
+        dependencies = TypeIdentifiers().visit(tree.root_node)
+        pattern = rb"b'([^']+)'"
+        cleaned_class = re.sub(pattern, r'\1', extract_class_names(tree.root_node)).decode('utf-8')
+        cleaned_dependencies = [re.sub(pattern, r'\1', s).decode('utf-8') for s in dependencies]
+        if not cleaned_class in graph.body:
+            graph.node(cleaned_class, cleaned_class)
+        for dep in cleaned_dependencies:
+            if dep in graph.body:
+                graph.edge(cleaned_class, dep, '')
+            else:
+                graph.node(dep,dep)
+                graph.edge(cleaned_class, dep, '')
     
+    #graph.render('depGraph')
 
     
     #Printer().visit(allTrees[0].root_node)
