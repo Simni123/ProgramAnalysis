@@ -9,6 +9,28 @@ JAVA_LANGUAGE = Language(FILE, "java")
 parser = Parser()
 parser.set_language(JAVA_LANGUAGE)
 
+class SyntaxFold:
+    def visit(self, node):
+        results = [ self.visit(n) for n in node.children ]
+        if hasattr(self, node.type):
+            return getattr(self, node.type)(node, results)
+        else:
+            return self.default(node, results)
+
+    def default(self, node):
+        print(node)
+
+class Printer(SyntaxFold):
+    def default(self, node, results):
+        print(node)
+
+class TypeIdentifiers(SyntaxFold):
+    def default(self, node, results):
+        return set().union(*results)
+    def type_identifier(self, node, results):
+        return {node.text}
+
+
 def is_java_file(filename):
     return fnmatch.fnmatch(filename, '*.java')
 
@@ -30,11 +52,13 @@ def main():
 
     allTrees = []
     for file in javaFiles:
-        with open("Test.java", "rb") as f:
+        with open(file, "rb") as f:
+            print(file)
             allTrees.append(parser.parse(f.read()))
-    
-    
-    print(allTrees[0].root_node.get)
+
+    for tree in allTrees:
+        print(TypeIdentifiers().visit(tree.root_node))
+    #Printer().visit(allTrees[0].root_node)
 
 
 
