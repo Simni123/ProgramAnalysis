@@ -31,12 +31,11 @@ class TypeIdentifiers(SyntaxFold):
         return set().union(*results)
     def type_identifier(self, node, results):
         return {node.text}
-    
-class ClassDeclaration(SyntaxFold):
-    def default(self, node, results):
-        return set().union(*results)
-    def method_declaration(self, node, results):
-        return {node.text}
+
+    def get_variable_name(self, variable_declarator_node):
+        for child_node in variable_declarator_node.children:
+            if child_node.type == 'variable_declarator_id':
+                return child_node.text
     
 def extract_class_names(node):
     if node.type == 'class_declaration':
@@ -88,7 +87,6 @@ def main():
             allTrees.append(parser.parse(f.read()))
 
     for tree in allTrees:
-        print(extract_field_names(tree.root_node))
         dependencies = TypeIdentifiers().visit(tree.root_node)
         pattern = rb"b'([^']+)'"
         cleaned_class = re.sub(pattern, r'\1', extract_class_names(tree.root_node)).decode('utf-8')
