@@ -38,11 +38,11 @@ class Interpreter:
     
     def run(self, param, k, abstract):
         self.abstract = abstract
-        mstack={}
+        mstack={}   #contains all posible bastract states in step x 
         mstack[0] = (sign_astraction(param,self.log),[],(self.casename,0))
-        self.states[0] = mstack
+        self.states[0] = mstack     #contains all steps 0->k wil mstacks
         step = 0
-        while k-step > 0:
+        while k-step > 0:   #calculating and adding all new states from step->step+1
             self.step(abstract, step)
             step += 1
         return
@@ -51,57 +51,43 @@ class Interpreter:
         stepStates = self.states[step]
         self.states[step+1] = {}
         stackIndex = 0
-        for index in stepStates:
+        for index in stepStates:    #loop of 
             self.log("->", stepStates[index], end="")
             (localVars, opStack, (cn_,i)) = stepStates[index]
             byte = find_method(self.casename)["code"]["bytecode"][i]
             if byte["opr"] == "push":
-                self.log("  push")
-                for l in range(2):
-                    self.states[step+1][stackIndex] = (localVars, opStack + [1], (cn_,i+1))
-                    stackIndex += 1
+                numb = byte["value"]["value"]
+                self.log("  push    ", numb)
+                value = abstract(numb, self.log)
+                self.states[step+1][stackIndex] = (localVars, opStack + [value], (cn_,i+1))    
+                stackIndex += 1
             else:
                 self.log("  fail    ", byte)
                 return
     
-    #def push(self, abstract, value):
-    #    if abstract == "sign":
-
-    #    else:
-    #        self.log("push: sabstract type not supported", abstract)
-
-'''
-def interp(caseName, log, param):
-    state = {}
-    abs_param = sign_astraction(param, log)
-    print(abs_param)
-    state[0] = (abs_param, [])
-    
-    mstack = [(param,[],(caseName, 0))]
-    while True:
-        log("->", mstack, end="")
-        (localsVars, opStack, (cn_, i)) = mstack[-1]
-        byte = find_method(caseName)["code"]["bytecode"][i]
-        log(" fail", byte)
-        return None
-        
-    return None
-'''
-    
 def sign_astraction(param, log):
-    abstract_param = []
-    for p in param:
-        if type(param[p]) == int:
-            if param[p] < 0:
-                abstract_param[p] = {'-'}
-            elif param[p] > 0:
-                abstract_param[p] = {'+'}
-            else:
-                abstract_param[p] = {'0'}
+    if type(param) == int:
+        return single_sign_abtraction(param, log)
+    elif type(param) == list:
+        abstract_param = []
+        for p in param:
+            abstract_param[p] = single_sign_abtraction(p,log)
+        return abstract_param
+    else:
+        log("sign abstraction type not supported", param, type(param))
+        return None
+
+def single_sign_abtraction(param, log):
+    if type(param) == int:
+        if param < 0:
+            return "-"
+        elif param > 0:
+            return "+"
         else:
-            log("Abstract type not yet supported", param[p], type(param[p]))
-            return None
-    return abstract_param
+            return "0"
+    else:
+        log("Single sing abstraction type not yet supported", param, type(param))
+        return None
 
 #setting arguments (need to be a list - make a list of a long length)
 #memory = [5,-3]
@@ -109,7 +95,7 @@ def sign_astraction(param, log):
 #memory[1] = -3
 #Running the interpurator
 interpret = Interpreter(print, "alwaysThrows1")
-interpret.run([], 3, "sign")
+interpret.run([], 3, sign_astraction)
 
 #print_bytecode("alwaysThrows1")
 #print(s)
