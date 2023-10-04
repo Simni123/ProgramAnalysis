@@ -375,7 +375,7 @@ memory = {}
 memory[0] = {"+","0","-"}
 memory[1] = {"+","0","-"}
 #Running the interpurator
-interpret = Interpreter(print, "neverThrows5")  #This is wrong answer
+interpret = Interpreter(print, "neverThrows5")  #This is wrong answer - see explination below
 s = interpret.run(memory, 10, sign_astraction)
 print(s)
 #print_bytecode("alwaysThrows4")
@@ -396,3 +396,9 @@ print(s)
 #   neverThrows3 (need assertion)   (not done)
 #   neverThrows4 (need assetion)    (not done)
 #   neverThrows5 (wrong)    (i suspect it is becouse the localVar dosent get limited in ifz statements but only stack dose)
+
+#Asswertion
+#get - add a {0} or the true to stack (asssertion disabled is false - the false is added to stack as 0)
+#next will always fail as that is run on the condition of assertion
+
+#Running multiple analysis - the result is the intersection of the two results
