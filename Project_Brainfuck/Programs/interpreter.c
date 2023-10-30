@@ -51,7 +51,7 @@ int fsize(FILE *fp){
     return sz;
 }
 
-void interpreter(char *cells, const int cellCount, char *file_string, const int file_size) {
+void interpreter(unsigned char *cells, const int cellCount, char *file_string, const int file_size) {
     int data_pointer = 0;
     int input_pointer = 0;
     int loop_array[100];
@@ -67,9 +67,9 @@ void interpreter(char *cells, const int cellCount, char *file_string, const int 
         
     /*Runnning through program*/
     for (int i = 0; i < file_size; i++)
-    {
-        printf("%d\n",i);
+    {   
         char symbol = (char) file_string[i];
+        
         switch (symbol)
         {
         case '+':
@@ -94,6 +94,7 @@ void interpreter(char *cells, const int cellCount, char *file_string, const int 
             break;
             
         case ',':
+            printf("Input fetching: %d\n", input_pointer);
             if (input_pointer <= 255)
             {
                 cells[data_pointer] = input[input_pointer];
@@ -108,8 +109,28 @@ void interpreter(char *cells, const int cellCount, char *file_string, const int 
             break;
         
         case '[':
-            loop_pointer++;
-            loop_array[loop_pointer] = i;
+            if (cells[data_pointer]!=0)
+            {
+                loop_pointer++;
+                loop_array[loop_pointer] = i;
+            } else {
+                //skpp loop
+                int loopCounter = 0;
+                while (loopCounter>-1)
+                {
+                    i++;
+                    char symbol = (char) file_string[i];
+                    if (symbol == '[')
+                    {
+                        loopCounter++;
+                    }
+                    if (symbol == ']')
+                    {
+                        loopCounter--;
+                    }
+                }
+            }
+            
             break;
         
         case ']':
@@ -123,6 +144,7 @@ void interpreter(char *cells, const int cellCount, char *file_string, const int 
             break;
         
         default:
+            printf("%c", symbol);
             break;
         }
     }
@@ -138,6 +160,8 @@ void interpreter(char *cells, const int cellCount, char *file_string, const int 
 int main() {
     char *folder_path = "../BrainFuck_Programs";
     char *file_name = "SimpleTest1.txt";
+    //char *file_name = "HelloWorldMinimized.txt";
+    //char *file_name = "HelloWorld.txt";
     FILE *b_program = openFile(folder_path, file_name);
     const int file_size = fsize(b_program);
     
@@ -152,7 +176,7 @@ int main() {
 
     /*Starting the interpreter*/
     const int cellCount = 100;
-    char byteArray[cellCount];
+    unsigned char byteArray[cellCount];
     memset(byteArray, 0, cellCount);
     interpreter(byteArray, cellCount, file_string, file_size);
 
