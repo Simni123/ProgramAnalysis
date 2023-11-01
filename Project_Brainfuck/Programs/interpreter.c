@@ -91,6 +91,12 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
 
         case '<':
             data_pointer -= 1;
+            if (data_pointer < 0)
+            {
+                printf("Moving behind cell 0");
+                return;
+            }
+            
             break;
             
         case ',':
@@ -100,7 +106,8 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
                 cells[data_pointer] = input[input_pointer];
                 input_pointer++;
             } else {
-                cells[data_pointer] = 0;
+                printf("Insuficient input length");
+                return;
             }
             break;
         
@@ -159,7 +166,7 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
 
 int main() {
     char *folder_path = "../BrainFuck_Programs";
-    char *file_name = "SimpleTest1.txt";
+    char *file_name = "test1.txt";
     //char *file_name = "HelloWorldMinimized.txt";
     //char *file_name = "HelloWorld.txt";
     FILE *b_program = openFile(folder_path, file_name);

@@ -1,0 +1,249 @@
+#include <stdio.h>
+#include <dirent.h>
+
+FILE* openFile(char *folder_path, char *file_name) {
+    DIR *folder = opendir(folder_path);
+    FILE *b_program;
+    struct dirent *entry;
+
+    if (folder == NULL)
+    {
+        puts("Folder not found error\n");
+        return NULL;
+    } 
+
+    while ((entry=readdir(folder)))
+    {
+        /*Skippin the directory reference files*/
+        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue;
+
+        /*OPening only wanted file*/
+        if (!strcmp(entry->d_name,file_name))
+        {
+            /*Concatinating the relative file directory string*/
+            char file_path[sizeof(folder_path)+sizeof(entry->d_name)+1];
+            strcpy(file_path, folder_path);
+            strcat(file_path, "/");
+            strcat(file_path, entry->d_name);
+
+            /*Opening the file to read it*/
+            b_program = fopen(file_path, "r");
+            if (b_program != NULL)
+            {
+                closedir(folder);
+                return b_program;
+            } else {
+                closedir(folder);
+                return NULL;
+            }
+            
+        }
+    }
+
+    return NULL;
+}
+
+FILE* createFile(char *file_path, char *file_name) {
+    DIR *transpiled_folder = opendir(file_path);
+    
+    /*Creating a subfile name without .type*/
+    char file_name_sub[sizeof(file_name)*2]; //WTF whry *2 - find out
+    strcpy(file_name_sub, file_name);
+    const char deli[] = ".";
+    char *token;
+    token = strtok(file_name_sub, deli);
+    
+    /*Concatinating the file name to a c file*/
+    char transpiled_file_name[sizeof(token)+2];
+    strcpy(transpiled_file_name, token);
+    strcat(transpiled_file_name, ".c");
+    
+    
+    /*Concatinating to the path of storage*/
+    char transpiled_file_path[sizeof(file_path)*2+sizeof(transpiled_file_name)+2]; //Why *2 again
+    strcpy(transpiled_file_path, file_path);
+    strcat(transpiled_file_path, "/");
+    strcat(transpiled_file_path, transpiled_file_name);
+
+    FILE *tFile = fopen(transpiled_file_path, "w+");
+    if (tFile == NULL)
+    {
+        printf("Could not create file\n");
+        return NULL;
+    }
+
+    return tFile;
+}
+
+int fsize(FILE *fp){
+    int prev=ftell(fp);
+    fseek(fp, 0L, SEEK_END);
+    int sz=ftell(fp);
+    fseek(fp,prev,SEEK_SET); //go back to where we were
+    return sz;
+}
+
+void transpiler(char *file_string, const int file_size, FILE* transpiled) {
+    
+    
+    /*Setting up C main and transpiled invironment*/    
+    fprintf(transpiled, "#include <stdio.h>\n");
+    fprintf(transpiled, "#include <dirent.h>\n");
+    fprintf(transpiled, "int main () {\n");
+    fprintf(transpiled, "int input_pointer = 0;\n");
+    fprintf(transpiled, "char input[255];\n");
+    fprintf(transpiled, "memset(input, 0, 255);\n");
+    fprintf(transpiled, "printf(\"Provide Input:\\n\");\n");
+    fprintf(transpiled, "scanf(\"%%255s\", input);\n");
+    fprintf(transpiled, "const int cellCount = 100;\n");
+    fprintf(transpiled, "unsigned char cells[cellCount];\n");
+    fprintf(transpiled, "memset(cells, 0, cellCount);\n");
+    fprintf(transpiled, "int idx = 0;\n");
+    fprintf(transpiled, "printf(\"Cells: %%d \\n\", cellCount);\n");
+    fprintf(transpiled, "printf(\"Output: \");\n");
+        
+    /*Runnning through program*/
+    for (int i = 0; i < file_size; i++)
+    {   
+        char symbol = (char) file_string[i];
+        
+        switch (symbol)
+        {
+        case '+':
+            //cells[data_pointer] += 1;
+            fprintf(transpiled, "cells[idx]++;\n");
+            break;
+        
+        case '-':
+            //cells[data_pointer] -= 1;
+            fprintf(transpiled, "cells[idx]--;\n");
+            break;
+
+        case '>':
+            //data_pointer += 1;
+            //if (data_pointer > cellCount)
+            //{
+            //    printf("Insufficient cellcount");
+            //    return;
+            //}
+            fprintf(transpiled, "idx++;\n");
+            fprintf(transpiled, "if(idx > cellCount) {");
+            fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
+            break;
+
+        case '<':
+            //data_pointer -= 1;
+            fprintf(transpiled, "idx--;\n");
+            fprintf(transpiled, "if(idx < 0) {");
+            fprintf(transpiled, "printf(\"idx less than zero\"); return -1;}\n");
+            break;
+            
+        case ',':
+            //printf("Input fetching: %d\n", input_pointer);
+            //if (input_pointer <= 255)
+            //{
+            //    cells[data_pointer] = input[input_pointer];
+            //    input_pointer++;
+            //} else {
+            //    cells[data_pointer] = 0;
+            //}
+            fprintf(transpiled, "if (input_pointer <= 255) {\n");
+            fprintf(transpiled, "cells[idx] = input[input_pointer];\n");
+            fprintf(transpiled, "input_pointer++;\n");
+            fprintf(transpiled, "} else {\n");
+            fprintf(transpiled, "printf(\"Insufficient input length\");}\n");
+            break;
+        
+        case '.':
+            //printf("%c", (char) cells[data_pointer]);
+            fprintf(transpiled,"printf(\"%%c\", (char) cells[idx]);\n");
+            break;
+        
+        case '[':
+            /*
+            if (cells[data_pointer]!=0)
+            {
+                loop_pointer++;
+                loop_array[loop_pointer] = i;
+            } else {
+                //skpp loop
+                int loopCounter = 0;
+                while (loopCounter>-1)
+                {
+                    i++;
+                    char symbol = (char) file_string[i];
+                    if (symbol == '[')
+                    {
+                        loopCounter++;
+                    }
+                    if (symbol == ']')
+                    {
+                        loopCounter--;
+                    }
+                }
+            }
+            fprintf(transpiled, "if (cells[idx]!= 0) {");
+            fprintf(transpiled, "idx++;");
+            fprintf(transpiled, "cells[idx] = ")
+            fprintf(transpiled,"}");
+            */
+            fprintf(transpiled, "while (cells[idx] != 0) {\n");
+            break;
+        
+        case ']':
+            /*
+            if (cells[data_pointer] != 0)
+            {
+                i = loop_array[loop_pointer];
+            } else {
+                loop_array[loop_pointer] = 0;
+                loop_pointer--;
+            }
+            */
+           fprintf(transpiled, "}\n");
+            break;
+        
+        default:
+            //printf("%c", symbol);
+            break;
+        }
+    }
+    // END OF MAIN
+    fprintf(transpiled, "printf(\"\\n\");\n");
+    fprintf(transpiled, "printf(\"Result: \\n\");\n");
+    fprintf(transpiled, "for(int i = 0; i < cellCount; i++) {\n");
+    fprintf(transpiled, "printf(\"[%%d]\",cells[i]);\n");
+    fprintf(transpiled, "};\n");
+    
+    fprintf(transpiled, "}");
+    fclose(transpiled);
+}
+
+int main() {
+    char *program_folder_path = "../BrainFuck_Programs";
+    //char *file_name = "test1.txt";
+    char *file_name = "BubbleSourt.txt";
+    //char *file_name = "HelloWorldMinimized.txt";
+    //char *file_name = "HelloWorld.txt";
+
+    
+    FILE *b_program = openFile(program_folder_path, file_name);
+    const int file_size = fsize(b_program);
+    
+    /*Reading file to string*/
+    char file_string[file_size];
+    strcpy(file_string, "");
+    const unsigned MAX_LENGTH = 256;
+    char buffer[MAX_LENGTH];
+    while (fgets(buffer, MAX_LENGTH, b_program)) strcat(file_string, buffer);
+    fclose(b_program);
+    
+    /*Creating new file to transpile into*/
+    char *transpiled_folder_path = "../NaiveTranspiling";
+    FILE *tranpiled_file = createFile(transpiled_folder_path,file_name);
+
+    /*Starting the transpiler*/
+    transpiler(file_string, file_size, tranpiled_file);
+
+    return 0;
+}
