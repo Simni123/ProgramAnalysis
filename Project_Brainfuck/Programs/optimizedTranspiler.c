@@ -83,8 +83,8 @@ int fsize(FILE *fp){
     return sz;
 }
 
-void transpiler(char *file_string, const int file_size, FILE* transpiled) {
-    /*Setting up C main and transpiled invironment*/    
+void transpiler(char *file_string, const int file_size, FILE* transpiled, char *optimization) {
+    /*Setting up C main and transpiled invironment*/
     fprintf(transpiled, "#include <stdio.h>\n");
     fprintf(transpiled, "#include <dirent.h>\n");
     fprintf(transpiled, "int main () {\n");
@@ -104,27 +104,148 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled) {
     for (int i = 0; i < file_size; i++)
     {   
         char symbol = (char) file_string[i];
+        int c = 0;
+        int tempi = i;
+        printf("start i: %d, symbol: %c\n", i, symbol);
+        /*Level 2 Optimizations cells[xxx]+=xxx;, cells[xxx]-=xxx; */
+        char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
+
+        //Counting the potential move fuse
+        while (symbol == '>')
+        {
+            c++;
+            i++;
+            symbol = (char) file_string[i];
+        }
+        int move_count = c;
+        char subString[73];
+        printf("move found c: %d\n", c);
         
+        //Continuing only if movement was found
+        if (c > 0)
+        {
+            //Initializing potential optimization string
+            snprintf(subString, sizeof(subString), "if(idx+%d > cellCount) {printf(\"insufficient cellcount\"); return -1;}\n", c);
+            strcpy(optimizedString, subString);
+            snprintf(subString, sizeof(subString), "cells[idx+%d]", c);
+            strcat(optimizedString, subString);
+            
+            //Counting additions/subtractions
+            c = 0;
+            while (symbol == '+' || symbol == '-')
+            {
+                if (symbol == '+')
+                    c++;
+                else c--;
+                i++;
+                symbol = (char) file_string[i];
+            }
+
+            //Adding addition/subtraction to potential optimization string
+            if (c < 0) {
+                snprintf(subString, sizeof(subString), "-=%d;\n", c); 
+                strcat(optimizedString, subString);
+            }
+            else {
+                snprintf(subString, sizeof(subString), "+=%d;\n", c);
+                strcat(optimizedString, subString);
+            }
+
+            //Testing if the ending movements corresponds to the start movements
+            char valid = 0;
+            printf("move_count: %d\n", move_count);
+            for (int j = 0; j < move_count; j++)
+            {
+                if (symbol != '<' || i > file_size)
+                {
+                    break;
+                }
+                i++;
+                symbol = (char) file_string[i];
+                if (j+1==move_count)
+                {
+                   valid=1;
+                }
+            }
+            
+            //Applying the valid optimization or resetting the reader to original symbol
+            if (valid) {fprintf(transpiled, optimizedString);}
+            else {i = tempi;};
+        }
+
+        //Resetting initializations for the rest to run correctly
+        symbol = (char) file_string[i];
+        c = 0;
+        printf("i: %d, symbol: %c, fileSize: %d\n", i, c, file_size);
+        
+        
+        /*Level 0-1 optimizations + nonOptimized parts*/
         switch (symbol)
         {
         case '+':
-            fprintf(transpiled, "cells[idx]++;\n");
+            if (optimization[0]) 
+            {
+                while (symbol == '+')
+                {
+                    c++;
+                    i++;
+                    symbol = (char) file_string[i];
+                }
+                i--;
+                fprintf(transpiled, "cells[idx]+=%d;\n",c);
+            } else fprintf(transpiled, "cells[idx]++;\n");
+            
             break;
         
         case '-':
-            fprintf(transpiled, "cells[idx]--;\n");
+            if (optimization[0]) 
+            {
+                while (symbol == '-')
+                {
+                    c++;
+                    i++;
+                    symbol = (char) file_string[i];
+                }
+                i--;
+                fprintf(transpiled, "cells[idx]-=%d;\n", c);
+            } else fprintf(transpiled, "cells[idx]--;\n");
+            
             break;
 
         case '>':
-            fprintf(transpiled, "idx++;\n");
+            if (optimization[1]) 
+            {
+                while (symbol == '>')
+                {
+                    c++;
+                    i++;
+                    symbol = (char) file_string[i];
+                }
+                i--;
+                fprintf(transpiled, "idx+=%d;\n", c);
+            } else fprintf(transpiled, "idx++;\n");
+            
             fprintf(transpiled, "if(idx > cellCount) {");
             fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
+            
             break;
 
         case '<':
-            fprintf(transpiled, "idx--;\n");
+            if (optimization[1])
+            {
+                while (symbol == '<')
+                {
+                    c++;
+                    i++;
+                    symbol = (char) file_string[i];
+                }
+                i--;
+                fprintf(transpiled, "idx-=%d;\n", c);
+            } else fprintf(transpiled, "idx--;\n");
+
             fprintf(transpiled, "if(idx < 0) {");
             fprintf(transpiled, "printf(\"idx less than zero\"); return -1;}\n");
+            
             break;
             
         case ',':
@@ -165,8 +286,8 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled) {
 
 int main() {
     char *program_folder_path = "../BrainFuck_Programs";
-    //char *file_name = "test1.txt";
-    char *file_name = "BubbleSourt.txt";
+    char *file_name = "test1.txt";
+    //char *file_name = "BubbleSourt.txt";
     //char *file_name = "HelloWorldMinimized.txt";
     //char *file_name = "HelloWorld.txt";
 
@@ -183,11 +304,16 @@ int main() {
     fclose(b_program);
     
     /*Creating new file to transpile into*/
-    char *transpiled_folder_path = "../NaiveTranspiling";
+    char *transpiled_folder_path = "../OptimizedTranspiling";
     FILE *tranpiled_file = createFile(transpiled_folder_path,file_name);
 
+    /*Choosing optimizations*/
+    char optimizations[5];
+    memset(optimizations, 0, 5);
+    optimizations[0] = 0;
+    optimizations[1] = 0;
     /*Starting the transpiler*/
-    transpiler(file_string, file_size, tranpiled_file);
+    transpiler(file_string, file_size, tranpiled_file, optimizations);
 
     return 0;
 }
