@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <dirent.h>
-int main () {
+int main (int argc, char **argv) {
 int input_pointer = 0;
-char input[255];
-memset(input, 0, 255);
-printf("Provide Input:\n");
-scanf("%255s", input);
+char *input;
+int input_len = 0;
+if (argc == 2) {input = argv[1]; input_len = strlen(input);}
 const int cellCount = 100;
 unsigned char cells[cellCount];
 memset(cells, 0, cellCount);
@@ -61,10 +60,10 @@ if(idx+1 > cellCount) {printf("insufficient cellcount"); return -1;}
 cells[idx+1]+=1;
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
-cells[idx]+=1;
+cells[idx]++;
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
-cells[idx]-=1;
+cells[idx]--;
 }
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
@@ -80,7 +79,7 @@ if(idx < 0) {printf("idx less than zero"); return -1;}
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
 while (cells[idx] != 0) {
-cells[idx]-=1;
+cells[idx]--;
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 }
@@ -94,7 +93,7 @@ idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
-cells[idx]-=1;
+cells[idx]--;
 }
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
@@ -104,7 +103,7 @@ idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
 while (cells[idx] != 0) {
 while (cells[idx] != 0) {
-cells[idx]-=1;
+cells[idx]--;
 }
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
@@ -113,7 +112,7 @@ if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 while (cells[idx] != 0) {
 if(idx+1 > cellCount) {printf("insufficient cellcount"); return -1;}
 cells[idx+1]+=1;
-cells[idx]-=1;
+cells[idx]--;
 }
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
@@ -122,7 +121,7 @@ if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 while (cells[idx] != 0) {
 if(idx-3 < 0) {printf("data pointer < zero"); return -1;}
 cells[idx-3]+=1;
-cells[idx]-=1;
+cells[idx]--;
 }
 }
 idx++;
@@ -133,7 +132,7 @@ while (cells[idx] != 0) {
 while (cells[idx] != 0) {
 if(idx-1 < 0) {printf("data pointer < zero"); return -1;}
 cells[idx-1]+=1;
-cells[idx]-=1;
+cells[idx]--;
 }
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
@@ -150,7 +149,7 @@ if(idx < 0) {printf("idx less than zero"); return -1;}
 while (cells[idx] != 0) {
 if(idx+2 > cellCount) {printf("insufficient cellcount"); return -1;}
 cells[idx+2]+=1;
-cells[idx]-=1;
+cells[idx]--;
 }
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}

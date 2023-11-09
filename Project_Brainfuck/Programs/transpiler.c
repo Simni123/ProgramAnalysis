@@ -87,12 +87,11 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled) {
     /*Setting up C main and transpiled invironment*/    
     fprintf(transpiled, "#include <stdio.h>\n");
     fprintf(transpiled, "#include <dirent.h>\n");
-    fprintf(transpiled, "int main () {\n");
+    fprintf(transpiled, "int main (int argc, char **argv) {\n");
     fprintf(transpiled, "int input_pointer = 0;\n");
-    fprintf(transpiled, "char input[255];\n");
-    fprintf(transpiled, "memset(input, 0, 255);\n");
-    fprintf(transpiled, "printf(\"Provide Input:\\n\");\n");
-    fprintf(transpiled, "scanf(\"%%255s\", input);\n");
+    fprintf(transpiled, "char *input;\n");
+    fprintf(transpiled, "int input_len = 0;\n");
+    fprintf(transpiled, "if (argc == 2) {input = argv[1]; input_len = strlen(input);}\n");
     fprintf(transpiled, "const int cellCount = 100;\n");
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
     fprintf(transpiled, "memset(cells, 0, cellCount);\n");
@@ -128,7 +127,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled) {
             break;
             
         case ',':
-            fprintf(transpiled, "if (input_pointer <= 255) {\n");
+            fprintf(transpiled, "if (input_pointer <= input_len) {\n");
             fprintf(transpiled, "cells[idx] = input[input_pointer];\n");
             fprintf(transpiled, "input_pointer++;\n");
             fprintf(transpiled, "} else {\n");
@@ -163,15 +162,13 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled) {
     fclose(transpiled);
 }
 
-int main() {
+int main(int argc, char **argv) {
     char *program_folder_path = "../BrainFuck_Programs";
-    //char *file_name = "test1.txt";
-    char *file_name = "BubbleSourt.txt";
-    //char *file_name = "HelloWorldMinimized.txt";
-    //char *file_name = "HelloWorld.txt";
-
     
+    /*Loading in file*/
+    char *file_name = argv[1];
     FILE *b_program = openFile(program_folder_path, file_name);
+    if (b_program == NULL) {printf("File not found\n"); return -1;}
     const int file_size = fsize(b_program);
     
     /*Reading file to string*/

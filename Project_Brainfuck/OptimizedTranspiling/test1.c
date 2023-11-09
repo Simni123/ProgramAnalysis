@@ -16,7 +16,7 @@ idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 if(idx+2 > cellCount) {printf("insufficient cellcount"); return -1;}
 cells[idx+2]+=3;
-cells[idx]-=1;
+cells[idx]--;
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
@@ -26,7 +26,7 @@ if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 while (cells[idx] != 0) {
-cells[idx]-=1;
+cells[idx]--;
 }
 if(idx-3 < 0) {printf("data pointer < zero"); return -1;}
 cells[idx-3]-=3;

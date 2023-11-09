@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <dirent.h>
+#include <unistd.h>
 
 FILE* openFile(char *folder_path, char *file_name) {
     DIR *folder = opendir(folder_path);
@@ -51,20 +52,13 @@ int fsize(FILE *fp){
     return sz;
 }
 
-void interpreter(unsigned char *cells, const int cellCount, char *file_string, const int file_size) {
+void interpreter(unsigned char *cells, const int cellCount, char *file_string, const int file_size, char *input, int input_size) {
     int data_pointer = 0;
     int input_pointer = 0;
     int loop_array[100];
     memset(loop_array, 0, 100);
     int loop_pointer = -1;
-    char input[255];
-    printf("Provide Input:\n");
-    memset(input, 0, 255);
-    scanf("%255s", input);
-
-    printf("Starting Interpreter\n");
-    printf("filesize %d\n", file_size);
-        
+    
     /*Runnning through program*/
     for (int i = 0; i < file_size; i++)
     {   
@@ -101,7 +95,7 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
             
         case ',':
             printf("Input fetching: %d\n", input_pointer);
-            if (input_pointer <= 255)
+            if (input_pointer <= input_size)
             {
                 cells[data_pointer] = input[input_pointer];
                 input_pointer++;
@@ -164,12 +158,13 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
     }
 }
 
-int main() {
+int main(int argc, char **argv) {
     char *folder_path = "../BrainFuck_Programs";
-    char *file_name = "test1.txt";
-    //char *file_name = "HelloWorldMinimized.txt";
-    //char *file_name = "HelloWorld.txt";
+
+    /*Loading in file*/
+    char *file_name = argv[1];
     FILE *b_program = openFile(folder_path, file_name);
+    if (b_program == NULL) {printf("File not found\n"); return -1;}
     const int file_size = fsize(b_program);
     
     /*Reading file to string*/
@@ -179,13 +174,19 @@ int main() {
     char buffer[MAX_LENGTH];
     while (fgets(buffer, MAX_LENGTH, b_program)) strcat(file_string, buffer);
     fclose(b_program);
-    
 
     /*Starting the interpreter*/
+    char *input;
+    int input_size = 0;
+    if (argc == 3)
+    {
+        input = argv[2];
+        input_size = strlen(input);
+    }
     const int cellCount = 100;
     unsigned char byteArray[cellCount];
     memset(byteArray, 0, cellCount);
-    interpreter(byteArray, cellCount, file_string, file_size);
+    interpreter(byteArray, cellCount, file_string, file_size, input, input_size);
 
     return 0;
 }

@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <dirent.h>
-int main () {
+int main (int argc, char **argv) {
 int input_pointer = 0;
-char input[255];
-memset(input, 0, 255);
-printf("Provide Input:\n");
-scanf("%255s", input);
+char *input;
+int input_len = 0;
+if (argc == 2) {input = argv[1]; input_len = strlen(input);}
 const int cellCount = 100;
 unsigned char cells[cellCount];
 memset(cells, 0, cellCount);
@@ -16,7 +15,7 @@ idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
-if (input_pointer <= 255) {
+if (input_pointer <= input_len) {
 cells[idx] = input[input_pointer];
 input_pointer++;
 } else {
@@ -26,7 +25,7 @@ idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
-if (input_pointer <= 255) {
+if (input_pointer <= input_len) {
 cells[idx] = input[input_pointer];
 input_pointer++;
 } else {
