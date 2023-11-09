@@ -44,7 +44,7 @@ FILE* openFile(char *folder_path, char *file_name) {
     return NULL;
 }
 
-FILE* createFile(char *file_path, char *file_name) {
+FILE* createFile(char *file_path, char *file_name, char *optimization, int optimization_count) {
     DIR *transpiled_folder = opendir(file_path);
     
     /*Creating a subfile name without .type*/
@@ -54,11 +54,26 @@ FILE* createFile(char *file_path, char *file_name) {
     char *token;
     token = strtok(file_name_sub, deli);
     
+    /*adding the optimization string on the file*/
+    char optimization_string[optimization_count*2+2];
+    printf("optimization length: %d\n", optimization_count);
+    strcpy(optimization_string, "[");
+    for (int i = 0; i < optimization_count; i++)
+    {
+        char op[2];
+        sprintf(op,"%d",optimization[i]);
+        strcat(optimization_string, op);
+        strcat(optimization_string, ",");
+    }
+    strcat(optimization_string, "]");
+
     /*Concatinating the file name to a c file*/
-    char transpiled_file_name[sizeof(token)+2];
+    char transpiled_file_name[sizeof(token)+sizeof(optimization_string)+2];
     strcpy(transpiled_file_name, token);
+    strcat(transpiled_file_name, optimization_string);
     strcat(transpiled_file_name, ".c");
-    
+    printf("optimization string: %s\n", optimization_string);
+    printf("FileName: %s\n", transpiled_file_name);
     
     /*Concatinating to the path of storage*/
     char transpiled_file_path[sizeof(file_path)*2+sizeof(transpiled_file_name)+2]; //Why *2 again
@@ -84,10 +99,41 @@ int fsize(FILE *fp){
     return sz;
 }
 
-void transpiler(char *file_string, const int file_size, FILE* transpiled, char *optimization) {
-    /*Setting up C main and transpiled invironment*/
+void initFile(FILE* transpiled, char *file_name) {
     fprintf(transpiled, "#include <stdio.h>\n");
     fprintf(transpiled, "#include <dirent.h>\n");
+    fprintf(transpiled, "\n");
+    fprintf(transpiled, "\n");
+
+    /*Adding method to write the result to file in the transpiled file*/
+    fprintf(transpiled, "FILE* createFile(char *file_path, char *file_name) {\n");
+    fprintf(transpiled, "DIR *transpiled_folder = opendir(file_path);\n");
+    fprintf(transpiled, "\n");
+    fprintf(transpiled, "/*Creating a subfile name without .type*/\n");
+    fprintf(transpiled, "char file_name_sub[sizeof(file_name)*2]; //WTF whry *2 - find out\n");
+    fprintf(transpiled, "strcpy(file_name_sub, file_name);\n");
+    fprintf(transpiled, "const char deli[] = \".\";\n");
+    fprintf(transpiled, "char *token;\n");
+    fprintf(transpiled, "token = strtok(file_name_sub, deli);\n");
+    fprintf(transpiled, "\n");
+    fprintf(transpiled, "/*Concatinating the file name to a c file*/\n");
+    fprintf(transpiled, "char transpiled_file_name[sizeof(token)+2];\n");
+    fprintf(transpiled, "strcpy(transpiled_file_name, token);\n");
+    fprintf(transpiled, "strcat(transpiled_file_name, \".txt\");\n");
+    fprintf(transpiled, "\n");
+    fprintf(transpiled, "/*Concatinating to the path of storage*/\n");
+    fprintf(transpiled, "char transpiled_file_path[sizeof(file_path)*2+sizeof(transpiled_file_name)+2]; //Why *2 again\n");
+    fprintf(transpiled, "strcpy(transpiled_file_path, file_path);\n");
+    fprintf(transpiled, "strcat(transpiled_file_path, \"/\");\n");
+    fprintf(transpiled, "strcat(transpiled_file_path, transpiled_file_name);\n");
+    fprintf(transpiled, "\n");
+    fprintf(transpiled, "FILE *tFile = fopen(transpiled_file_path, \"w+\");\n");
+    fprintf(transpiled, "if (tFile == NULL) { printf(\"Could not create file\\n\"); return NULL;}\n");
+    fprintf(transpiled, "return tFile;\n");
+    fprintf(transpiled, "}\n");
+    fprintf(transpiled, "\n");
+
+    /*adding main method*/
     fprintf(transpiled, "int main (int argc, char **argv) {\n");
     fprintf(transpiled, "int input_pointer = 0;\n");
     fprintf(transpiled, "char *input;\n");
@@ -99,7 +145,15 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     fprintf(transpiled, "int idx = 0;\n");
     fprintf(transpiled, "printf(\"Cells: %%d \\n\", cellCount);\n");
     fprintf(transpiled, "printf(\"Output: \");\n");
+    
+    /*Creating new file to transpile into*/
+    fprintf(transpiled, "char *result_folder_path = \"../UnitTestFiles\";\n");
+    fprintf(transpiled, "FILE *result_file = createFile(result_folder_path,\"%s\");\n", file_name);
+    fprintf(transpiled, "fprintf(result_file,\"Output: \");\n");
+}
 
+void transpiler(char *file_string, const int file_size, FILE* transpiled, char *optimization) {
+    
     /*Runnning through program*/
     for (int i = 0; i < file_size; i++)
     {   
@@ -273,6 +327,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         
         case '.':
             fprintf(transpiled,"printf(\"%%c\", (char) cells[idx]);\n");
+            fprintf(transpiled,"fprintf(result_file,\"%%c\", (char) cells[idx]);\n");
             break;
         
         case '[':
@@ -290,9 +345,13 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     }
     // END OF MAIN
     fprintf(transpiled, "printf(\"\\n\");\n");
+    fprintf(transpiled, "fprintf(result_file,\"\\n\");\n");
     fprintf(transpiled, "printf(\"Result: \\n\");\n");
+    fprintf(transpiled, "fprintf(result_file,\"Result:\");\n");
     fprintf(transpiled, "for(int i = 0; i < cellCount; i++) {\n");
     fprintf(transpiled, "printf(\"[%%d]\",cells[i]);\n");
+    fprintf(transpiled, "if (i%%10==0) fprintf(result_file,\"\\n\");\n");
+    fprintf(transpiled, "fprintf(result_file,\"[%%d]\",cells[i]);\n");
     fprintf(transpiled, "};\n");
     
     fprintf(transpiled, "}");
@@ -319,14 +378,11 @@ int main(int argc, char **argv) {
     char buffer[MAX_LENGTH];
     while (fgets(buffer, MAX_LENGTH, b_program)) strcat(file_string, buffer);
     fclose(b_program);
-    
-    /*Creating new file to transpile into*/
-    char *transpiled_folder_path = "../OptimizedTranspiling";
-    FILE *tranpiled_file = createFile(transpiled_folder_path,file_name);
 
     /*Parsing optimization options*/
+    int optimization_count = 5;
     //Testing option validity
-    if (argc != 7)
+    if (argc != optimization_count+2)
     {
         printf("You must parse exactly 5 optimization option numbers {1;0} for each number");
         return -1;
@@ -341,7 +397,7 @@ int main(int argc, char **argv) {
     }
 
     //Parsing options
-    char optimizations[5];
+    char optimizations[optimization_count];
     printf("optimizations: [");
     optimizations[0] = atoi(argv[2]);
     printf("%d", optimizations[0]);
@@ -354,6 +410,11 @@ int main(int argc, char **argv) {
     
     //optimizations[0] = 1;
     //optimizations[1] = 0;
+
+    /*Creating new file to transpile into*/
+    char *transpiled_folder_path = "../OptimizedTranspiling";
+    FILE *tranpiled_file = createFile(transpiled_folder_path,file_name, optimizations, optimization_count);
+    initFile(tranpiled_file, file_name); //initializing file methods
 
     /*Starting the transpiler*/
     transpiler(file_string, file_size, tranpiled_file, optimizations);
