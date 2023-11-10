@@ -12,9 +12,19 @@ const char deli[] = ".";
 char *token;
 token = strtok(file_name_sub, deli);
 
-/*Concatinating the file name to a c file*/
-char transpiled_file_name[sizeof(token)+2];
+/*adding the optimization string on the file*/
+char optimization_string[5+2];
+strcpy(optimization_string, "[");
+strcat(optimization_string, "0");
+strcat(optimization_string, "0");
+strcat(optimization_string, "0");
+strcat(optimization_string, "0");
+strcat(optimization_string, "0");
+strcat(optimization_string, "]");
+/*Concatinating the file name to a txt file*/
+char transpiled_file_name[sizeof(token)+sizeof(optimization_string)+2];
 strcpy(transpiled_file_name, token);
+strcat(transpiled_file_name, optimization_string);
 strcat(transpiled_file_name, ".txt");
 
 /*Concatinating to the path of storage*/
@@ -87,8 +97,11 @@ if(idx < 0) {printf("idx less than zero"); return -1;}
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
 while (cells[idx] != 0) {
-if(idx+1 > cellCount) {printf("insufficient cellcount"); return -1;}
-cells[idx+1]+=1;
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
+cells[idx]++;
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
 cells[idx]++;
@@ -101,8 +114,11 @@ if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 while (cells[idx] != 0) {
-if(idx+1 > cellCount) {printf("insufficient cellcount"); return -1;}
-cells[idx+1]+=1;
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
+cells[idx]++;
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
 idx--;
@@ -141,8 +157,11 @@ if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 while (cells[idx] != 0) {
-if(idx+1 > cellCount) {printf("insufficient cellcount"); return -1;}
-cells[idx+1]+=1;
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
+cells[idx]++;
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
 cells[idx]--;
 }
 idx++;
@@ -150,8 +169,19 @@ if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 while (cells[idx] != 0) {
-if(idx-3 < 0) {printf("data pointer < zero"); return -1;}
-cells[idx-3]+=1;
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
+cells[idx]++;
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 cells[idx]--;
 }
 }
@@ -161,8 +191,11 @@ idx++;
 if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 while (cells[idx] != 0) {
 while (cells[idx] != 0) {
-if(idx-1 < 0) {printf("data pointer < zero"); return -1;}
-cells[idx-1]+=1;
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
+cells[idx]++;
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
 cells[idx]--;
 }
 idx++;
@@ -178,8 +211,15 @@ if(idx < 0) {printf("idx less than zero"); return -1;}
 idx--;
 if(idx < 0) {printf("idx less than zero"); return -1;}
 while (cells[idx] != 0) {
-if(idx+2 > cellCount) {printf("insufficient cellcount"); return -1;}
-cells[idx+2]+=1;
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
+idx++;
+if(idx > cellCount) {printf("insufficient cellcount"); return -1;}
+cells[idx]++;
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
+idx--;
+if(idx < 0) {printf("idx less than zero"); return -1;}
 cells[idx]--;
 }
 idx--;

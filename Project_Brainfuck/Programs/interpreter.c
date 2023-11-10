@@ -116,8 +116,8 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
                 loop_array[loop_pointer] = i;
             } else {
                 //skpp loop
-                int loopCounter = 0;
-                while (loopCounter>-1)
+                int loopCounter = 1;
+                while (loopCounter>0)
                 {
                     i++;
                     char symbol = (char) file_string[i];
