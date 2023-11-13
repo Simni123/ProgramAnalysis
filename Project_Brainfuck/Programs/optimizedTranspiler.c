@@ -45,8 +45,6 @@ FILE* openFile(char *folder_path, char *file_name) {
 }
 
 FILE* createFile(char *file_path, char *file_name, char *optimization, int optimization_count) {
-    DIR *transpiled_folder = opendir(file_path);
-    
     /*Creating a subfile name without .type*/
     char file_name_sub[sizeof(file_name)*2]; //WTF whry *2 - find out
     strcpy(file_name_sub, file_name);
@@ -148,8 +146,6 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
     fprintf(transpiled, "memset(cells, 0, cellCount);\n");
     fprintf(transpiled, "int idx = 0;\n");
-    fprintf(transpiled, "printf(\"Cells: %%d \\n\", cellCount);\n");
-    fprintf(transpiled, "printf(\"Output: \");\n");
     
     /*Creating new file to transpile into*/
     fprintf(transpiled, "char *result_folder_path = \"../UnitTestFiles\";\n");
@@ -331,7 +327,6 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '.':
-            fprintf(transpiled,"printf(\"%%c\", (char) cells[idx]);\n");
             fprintf(transpiled,"fprintf(result_file,\"%%c\", (char) cells[idx]);\n");
             break;
         
@@ -349,15 +344,11 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         }
     }
     // END OF MAIN
-    fprintf(transpiled, "printf(\"\\n\");\n");
-    fprintf(transpiled, "printf(\"Result: \\n\");\n");
     fprintf(transpiled, "fprintf(result_file,\"Result:\");\n");
     fprintf(transpiled, "for(int i = 0; i < cellCount; i++) {\n");
-    fprintf(transpiled, "printf(\"[%%d]\",cells[i]);\n");
     fprintf(transpiled, "if (i%%10==0) fprintf(result_file,\"\\n\");\n");
     fprintf(transpiled, "fprintf(result_file,\"[%%d]\",cells[i]);\n");
     fprintf(transpiled, "}\n");
-    
     fprintf(transpiled, "}");
     fclose(transpiled);
 }

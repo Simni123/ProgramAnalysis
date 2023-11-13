@@ -52,12 +52,43 @@ int fsize(FILE *fp){
     return sz;
 }
 
-void interpreter(unsigned char *cells, const int cellCount, char *file_string, const int file_size, char *input, int input_size) {
+FILE* createFile(char *file_path, char *file_name) {
+    /*Creating a subfile name without .type*/
+    char file_name_sub[1024];
+    strcpy(file_name_sub, file_name);
+    const char deli[] = ".";
+    char *token;
+    token = strtok(file_name_sub, deli);
+    
+    /*Concatinating the file name to a c file*/
+    char transpiled_file_name[1024];
+    strcpy(transpiled_file_name, token);
+    strcat(transpiled_file_name, "_interpreted");
+    strcat(transpiled_file_name, ".txt");
+    
+    /*Concatinating to the path of storage*/
+    char transpiled_file_path[1024];
+    strcpy(transpiled_file_path, file_path);
+    strcat(transpiled_file_path, "/");
+    strcat(transpiled_file_path, transpiled_file_name);
+
+    FILE *tFile = fopen(transpiled_file_path, "w+");
+    if (tFile == NULL)
+    {
+        printf("Could not create file\n");
+        return NULL;
+    }
+
+    return tFile;
+}
+
+void interpreter(unsigned char *cells, const int cellCount, char *file_string, const int file_size, char *input, int input_size, FILE *output_file) {
     int data_pointer = 0;
     int input_pointer = 0;
     int loop_array[100];
     memset(loop_array, 0, 100);
     int loop_pointer = -1;
+    fprintf(output_file, "Output: ");
     
     /*Runnning through program*/
     for (int i = 0; i < file_size; i++)
@@ -94,7 +125,6 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
             break;
             
         case ',':
-            printf("Input fetching: %d\n", input_pointer);
             if (input_pointer <= input_size)
             {
                 cells[data_pointer] = input[input_pointer];
@@ -106,7 +136,7 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
             break;
         
         case '.':
-            printf("%c", (char) cells[data_pointer]);
+            fprintf(output_file,"%c", (char) cells[data_pointer]);
             break;
         
         case '[':
@@ -149,16 +179,18 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
         }
     }
     
-    printf("\n");
+    fprintf(output_file, "Result:");
     /*Printing the cell results*/
     for (int i = 0; i < cellCount ; i++)
     {
-        printf("[%d]",cells[i]);
+        if (i%10 == 0) fprintf(output_file, "\n");
+        fprintf(output_file, "[%d]",cells[i]);
     }
 }
 
 int main(int argc, char **argv) {
     char *folder_path = "../BrainFuck_Programs";
+    char *output_folder_path = "../UnitTestFiles";
 
     /*Loading in file*/
     char *file_name = argv[1];
@@ -174,6 +206,9 @@ int main(int argc, char **argv) {
     while (fgets(buffer, MAX_LENGTH, b_program)) strcat(file_string, buffer);
     fclose(b_program);
 
+    /*Creating output file*/
+    FILE *output_file = createFile(output_folder_path,file_name);
+
     /*Starting the interpreter*/
     char *input;
     int input_size = 0;
@@ -185,7 +220,7 @@ int main(int argc, char **argv) {
     const int cellCount = 100;
     unsigned char byteArray[cellCount];
     memset(byteArray, 0, cellCount);
-    interpreter(byteArray, cellCount, file_string, file_size, input, input_size);
+    interpreter(byteArray, cellCount, file_string, file_size, input, input_size, output_file);
 
     return 0;
 }
