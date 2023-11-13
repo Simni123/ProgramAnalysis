@@ -393,19 +393,12 @@ int main(int argc, char **argv) {
 
     //Parsing options
     char optimizations[optimization_count];
-    printf("optimizations: [");
     optimizations[0] = atoi(argv[2]);
-    printf("%d", optimizations[0]);
     for (int i = 3; i < argc; i++)
     {
         optimizations[i-2] = atoi(argv[i]);
-        printf(",%d", optimizations[i-2]);
     }
-    printf("]\n");
     
-    //optimizations[0] = 1;
-    //optimizations[1] = 0;
-
     /*Creating new file to transpile into*/
     char *transpiled_folder_path = "../OptimizedTranspiling";
     FILE *tranpiled_file = createFile(transpiled_folder_path,file_name, optimizations, optimization_count);
