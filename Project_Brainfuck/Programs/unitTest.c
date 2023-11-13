@@ -25,7 +25,7 @@ void compilePrograms() {
 }
 
 void executeInterpretor(char *program, char *input) {
-    char cmd_string[sizeof("interpreter.exe") + sizeof(program) + sizeof(input) + 2];
+    char cmd_string[sizeof("interpreter.exe ") + sizeof(program) + sizeof(input) + 1];
     strcpy(cmd_string, "interpreter.exe ");
     strcat(cmd_string, program);
     strcat(cmd_string, " ");
@@ -34,10 +34,46 @@ void executeInterpretor(char *program, char *input) {
     command(cmd_string);
 }
 
+void executeTranspiler(char *program, char *input) {
+    char cmd_string[sizeof("transpiler.exe ") + sizeof(program)];
+    strcpy(cmd_string, "transpiler.exe ");
+    strcat(cmd_string, program);
+    command(cmd_string);
+
+    /*Changing directory to NaiveTranspiling*/
+    changeDir("..");
+    changeDir("NaiveTranspiling");
+
+    /*Creating a subfile name without .type*/
+    char file_name_sub[sizeof(program)*2]; //WTF whry *2 - find out
+    strcpy(file_name_sub, program);
+    const char deli[] = ".";
+    char *token;
+    token = strtok(file_name_sub, deli);
+
+    char token_holder[sizeof(token)*2]; //WIF - why dose token work in the next two cases but not the thired
+    strcpy(token_holder, token);
+
+    cmd_string[4 + sizeof(token) + 6 + sizeof(token)];
+    strcpy(cmd_string, "gcc ");
+    strcat(cmd_string, token);
+    strcat(cmd_string, ".c -o ");
+    strcat(cmd_string, token);
+    command(cmd_string);
+
+    /*Running transpiled executable*/
+    cmd_string[sizeof(token) + 5 + sizeof(input)];
+    strcpy(cmd_string,token_holder);
+    strcat(cmd_string, ".exe");
+    strcat(cmd_string, " ");
+    strcat(cmd_string, input);
+    command(cmd_string);
+}
+
 int main()
 {
     compilePrograms();
-    executeInterpretor("test1.txt", "bha");
+    executeTranspiler("HelloWorld.txt", "");
 
     /*
     const char *command1 = "gcc optimizedTranspiler.c -o optrans";
