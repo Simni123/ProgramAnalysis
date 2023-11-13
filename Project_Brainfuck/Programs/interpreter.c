@@ -145,7 +145,6 @@ void interpreter(unsigned char *cells, const int cellCount, char *file_string, c
             break;
         
         default:
-            printf("%c", symbol);
             break;
         }
     }

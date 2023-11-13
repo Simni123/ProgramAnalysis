@@ -55,7 +55,7 @@ FILE* createFile(char *file_path, char *file_name, char *optimization, int optim
     token = strtok(file_name_sub, deli);
     
     /*adding the optimization string on the file*/
-    char optimization_string[optimization_count*2+2];
+    char optimization_string[optimization_count+2];
     strcpy(optimization_string, "[");
     for (int i = 0; i < optimization_count; i++)
     {
@@ -350,14 +350,13 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     }
     // END OF MAIN
     fprintf(transpiled, "printf(\"\\n\");\n");
-    fprintf(transpiled, "fprintf(result_file,\"\\n\");\n");
     fprintf(transpiled, "printf(\"Result: \\n\");\n");
     fprintf(transpiled, "fprintf(result_file,\"Result:\");\n");
     fprintf(transpiled, "for(int i = 0; i < cellCount; i++) {\n");
     fprintf(transpiled, "printf(\"[%%d]\",cells[i]);\n");
     fprintf(transpiled, "if (i%%10==0) fprintf(result_file,\"\\n\");\n");
     fprintf(transpiled, "fprintf(result_file,\"[%%d]\",cells[i]);\n");
-    fprintf(transpiled, "};\n");
+    fprintf(transpiled, "}\n");
     
     fprintf(transpiled, "}");
     fclose(transpiled);
