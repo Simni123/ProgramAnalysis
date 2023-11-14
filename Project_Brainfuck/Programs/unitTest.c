@@ -12,10 +12,11 @@ void changeDir(char *dir) {
     #endif
 }
 
-void command(char *cmd) {
+int command(char *cmd) {
     int result = system(cmd);
     if (result == 0) printf("success: %s\n", cmd);
     else printf("fail: %s\n", cmd);
+    return result;
 }
 
 void compilePrograms() {
@@ -69,7 +70,8 @@ void executeTranspiler(char *program, char *input) {
     changeDir("Programs");
 }
 
-void executeOptimizedTranspiler(char *program, char *input, int *optimization, int optimization_count) {
+int executeOptimizedTranspiler(char *program, char *input, int *optimization, int optimization_count) {
+    int fail = 0;
     char cmd_string[1024];
     strcpy(cmd_string, "optimizedTranspiler.exe ");
     strcat(cmd_string, program);
@@ -79,8 +81,8 @@ void executeOptimizedTranspiler(char *program, char *input, int *optimization, i
         sprintf(op," %d",optimization[i]);
         strcat(cmd_string, op);
     }
-    command(cmd_string);
-
+    fail = max(command(cmd_string),fail);
+    
     /*Changing directory to NaiveTranspiling*/
     changeDir("..");
     changeDir("OptimizedTranspiling");
@@ -110,7 +112,7 @@ void executeOptimizedTranspiler(char *program, char *input, int *optimization, i
     strcat(cmd_string, ".c -o ");
     strcat(cmd_string, token);
     strcat(cmd_string, optimization_string);
-    command(cmd_string);
+    fail = max(command(cmd_string),fail);
 
     /*Running transpiled executable*/
     strcpy(cmd_string, token);
@@ -118,24 +120,56 @@ void executeOptimizedTranspiler(char *program, char *input, int *optimization, i
     strcat(cmd_string, ".exe");
     strcat(cmd_string, " ");
     strcat(cmd_string, input);
-    command(cmd_string);
+    fail = max(command(cmd_string),fail);
 
     /*Returning to programs folder*/
     changeDir("..");
     changeDir("Programs");
+    return fail;
+}
+
+void executeAllOptimizedTranspilers(char *program, char *input) {
+    int optimization_count = 5;
+    int optimizations[optimization_count];
+    int idx = 0;
+    memset(optimizations,0,optimization_count*sizeof(int));
+
+    while (1)
+    {
+        int fail = 1;
+        while (fail)
+        {
+            fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count);
+        }
+        
+        //generate new binary number
+        int carry = 1;
+        int i = optimization_count-1;
+
+        while (i >= 0 && carry)
+        {
+            if (optimizations[i] == 1) optimizations[i] = 0;
+            else {optimizations[i] = 1; carry = 0;}
+            i--; 
+        }
+        if (carry) break;
+    }
+}
+
+void allTest(char *program, char *input) {
+    executeTranspiler(program, input);
+
+    executeInterpretor(program, input);
+
+    executeAllOptimizedTranspilers(program, input);
 }
 
 int main()
 {
     compilePrograms();
-    int optimization_count = 5;
-    int optimizations[optimization_count];
-    memset(optimizations,0,optimization_count*sizeof(int));
-    executeOptimizedTranspiler("HelloWorld.txt", "", optimizations, optimization_count);
+
+    allTest("HelloWorld.txt", "");
+    allTest("BubbleSourt.txt", "baabz");
     
-    executeTranspiler("HelloWorld.txt", "");
-
-    executeInterpretor("HelloWorld.txt", "");
-
     return 0;
 }

@@ -21,7 +21,7 @@ FILE* openFile(char *folder_path, char *file_name) {
         if (!strcmp(entry->d_name,file_name))
         {
             /*Concatinating the relative file directory string*/
-            char file_path[sizeof(folder_path)+sizeof(entry->d_name)+1];
+            char file_path[1024];
             strcpy(file_path, folder_path);
             strcat(file_path, "/");
             strcat(file_path, entry->d_name);
@@ -47,20 +47,20 @@ FILE* createFile(char *file_path, char *file_name) {
     DIR *transpiled_folder = opendir(file_path);
     
     /*Creating a subfile name without .type*/
-    char file_name_sub[sizeof(file_name)*2]; //WTF whry *2 - find out
+    char file_name_sub[1024];
     strcpy(file_name_sub, file_name);
     const char deli[] = ".";
     char *token;
     token = strtok(file_name_sub, deli);
     
     /*Concatinating the file name to a c file*/
-    char transpiled_file_name[sizeof(token)+2];
+    char transpiled_file_name[1024];
     strcpy(transpiled_file_name, token);
     strcat(transpiled_file_name, ".c");
     
     
     /*Concatinating to the path of storage*/
-    char transpiled_file_path[sizeof(file_path)*2+sizeof(transpiled_file_name)+2]; //Why *2 again
+    char transpiled_file_path[1024];
     strcpy(transpiled_file_path, file_path);
     strcat(transpiled_file_path, "/");
     strcat(transpiled_file_path, transpiled_file_name);

@@ -23,7 +23,7 @@ FILE* openFile(char *folder_path, char *file_name) {
         if (!strcmp(entry->d_name,file_name))
         {
             /*Concatinating the relative file directory string*/
-            char file_path[sizeof(folder_path)+sizeof(entry->d_name)+1];
+            char file_path[1024];
             strcpy(file_path, folder_path);
             strcat(file_path, "/");
             strcat(file_path, entry->d_name);
@@ -46,7 +46,7 @@ FILE* openFile(char *folder_path, char *file_name) {
 
 FILE* createFile(char *file_path, char *file_name, char *optimization, int optimization_count) {
     /*Creating a subfile name without .type*/
-    char file_name_sub[sizeof(file_name)*2]; //WTF whry *2 - find out
+    char file_name_sub[1024]; //WTF whry *2 - find out
     strcpy(file_name_sub, file_name);
     const char deli[] = ".";
     char *token;
@@ -64,13 +64,13 @@ FILE* createFile(char *file_path, char *file_name, char *optimization, int optim
     strcat(optimization_string, "]");
 
     /*Concatinating the file name to a c file*/
-    char transpiled_file_name[sizeof(token)+sizeof(optimization_string)+2];
+    char transpiled_file_name[1024];
     strcpy(transpiled_file_name, token);
     strcat(transpiled_file_name, optimization_string);
     strcat(transpiled_file_name, ".c");
     
     /*Concatinating to the path of storage*/
-    char transpiled_file_path[sizeof(file_path)*2+sizeof(transpiled_file_name)+2]; //Why *2 again
+    char transpiled_file_path[1024];
     strcpy(transpiled_file_path, file_path);
     strcat(transpiled_file_path, "/");
     strcat(transpiled_file_path, transpiled_file_name);
@@ -104,7 +104,7 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "DIR *transpiled_folder = opendir(file_path);\n");
     fprintf(transpiled, "\n");
     fprintf(transpiled, "/*Creating a subfile name without .type*/\n");
-    fprintf(transpiled, "char file_name_sub[sizeof(file_name)*2]; //WTF whry *2 - find out\n");
+    fprintf(transpiled, "char file_name_sub[1024];\n");
     fprintf(transpiled, "strcpy(file_name_sub, file_name);\n");
     fprintf(transpiled, "const char deli[] = \".\";\n");
     fprintf(transpiled, "char *token;\n");
@@ -119,13 +119,13 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     }
     fprintf(transpiled, "strcat(optimization_string, \"]\");\n");
     fprintf(transpiled, "/*Concatinating the file name to a txt file*/\n");
-    fprintf(transpiled, "char transpiled_file_name[sizeof(token)+sizeof(optimization_string)+2];\n");
+    fprintf(transpiled, "char transpiled_file_name[1024];\n");
     fprintf(transpiled, "strcpy(transpiled_file_name, token);\n");
     fprintf(transpiled, "strcat(transpiled_file_name, optimization_string);\n");
     fprintf(transpiled, "strcat(transpiled_file_name, \".txt\");\n");
     fprintf(transpiled, "\n");
     fprintf(transpiled, "/*Concatinating to the path of storage*/\n");
-    fprintf(transpiled, "char transpiled_file_path[sizeof(file_path)*2+sizeof(transpiled_file_name)+2]; //Why *2 again\n");
+    fprintf(transpiled, "char transpiled_file_path[1024];\n");
     fprintf(transpiled, "strcpy(transpiled_file_path, file_path);\n");
     fprintf(transpiled, "strcat(transpiled_file_path, \"/\");\n");
     fprintf(transpiled, "strcat(transpiled_file_path, transpiled_file_name);\n");
@@ -163,7 +163,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         int tempi = i;
         
         /*Level 2 Optimizations cells[xxx]+=xxx;, cells[xxx]-=xxx; */
-        if (optimization[2])
+        if (/*optimization[2]*/0)
         {
             char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
 
@@ -178,7 +178,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             int move_count = c;
             if (c < 0) move_count = -c;
             
-            char subString[73];
+            char subString[1024];
             
             //Continuing only if movement was found
             if (c != 0)
@@ -186,14 +186,14 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
                 //Initializing potential optimization string
                 if (c > 0)
                 {
-                    snprintf(subString, sizeof(subString), "if(idx+%d > cellCount) {printf(\"insufficient cellcount\"); return -1;}\n", c);
+                    snprintf(subString, 1024, "if(idx+%d > cellCount) {printf(\"insufficient cellcount\"); return -1;}\n", c);
                     strcpy(optimizedString, subString);
-                    snprintf(subString, sizeof(subString), "cells[idx+%d]", c);
+                    snprintf(subString, 1024, "cells[idx+%d]", c);
                     strcat(optimizedString, subString);
                 } else {
-                    snprintf(subString, sizeof(subString), "if(idx-%d < 0) {printf(\"data pointer < zero\"); return -1;}\n", -c);
+                    snprintf(subString, 1024, "if(idx-%d < 0) {printf(\"data pointer < zero\"); return -1;}\n", -c);
                     strcpy(optimizedString, subString);
-                    snprintf(subString, sizeof(subString), "cells[idx-%d]", -c);
+                    snprintf(subString, 1024, "cells[idx-%d]", -c);
                     strcat(optimizedString, subString);
                 }
                 
@@ -211,11 +211,11 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
 
                 //Adding addition/subtraction to potential optimization string
                 if (inc < 0) {
-                    snprintf(subString, sizeof(subString), "-=%d;\n", -inc);
+                    snprintf(subString, 1024, "-=%d;\n", -inc);
                     strcat(optimizedString, subString);
                 }
                 else {
-                    snprintf(subString, sizeof(subString), "+=%d;\n", inc);
+                    snprintf(subString, 1024, "+=%d;\n", inc);
                     strcat(optimizedString, subString);
                 }
 
@@ -253,7 +253,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         switch (symbol)
         {
         case '+':
-            if (optimization[0]) 
+            if (/*optimization[0]*/0) 
             {
                 while (symbol == '+')
                 {
@@ -268,7 +268,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '-':
-            if (optimization[0]) 
+            if (/*optimization[0]*/0) 
             {
                 while (symbol == '-')
                 {
@@ -283,7 +283,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '>':
-            if (optimization[1]) 
+            if (/*optimization[1]*/0) 
             {
                 while (symbol == '>')
                 {
@@ -301,7 +301,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '<':
-            if (optimization[1])
+            if (/*optimization[1]*/0)
             {
                 while (symbol == '<')
                 {
@@ -344,7 +344,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         }
     }
     // END OF MAIN
-    fprintf(transpiled, "fprintf(result_file,\"Result:\");\n");
+    fprintf(transpiled, "fprintf(result_file,\"\\nResult:\");\n");
     fprintf(transpiled, "for(int i = 0; i < cellCount; i++) {\n");
     fprintf(transpiled, "if (i%%10==0) fprintf(result_file,\"\\n\");\n");
     fprintf(transpiled, "fprintf(result_file,\"[%%d]\",cells[i]);\n");
@@ -355,10 +355,6 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
 
 int main(int argc, char **argv) {
     char *program_folder_path = "../BrainFuck_Programs";
-    //char *file_name = "test1.txt";
-    //char *file_name = "BubbleSourt.txt";
-    //char *file_name = "HelloWorldMinimized.txt";
-    //char *file_name = "HelloWorld.txt";
 
     /*Loading in file*/
     char *file_name = argv[1];

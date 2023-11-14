@@ -22,7 +22,7 @@ FILE* openFile(char *folder_path, char *file_name) {
         if (!strcmp(entry->d_name,file_name))
         {
             /*Concatinating the relative file directory string*/
-            char file_path[sizeof(folder_path)+sizeof(entry->d_name)+1];
+            char file_path[1024];
             strcpy(file_path, folder_path);
             strcat(file_path, "/");
             strcat(file_path, entry->d_name);
