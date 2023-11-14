@@ -163,7 +163,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         int tempi = i;
         
         /*Level 2 Optimizations cells[xxx]+=xxx;, cells[xxx]-=xxx; */
-        if (/*optimization[2]*/0)
+        if (optimization[2]) //change to 0 for base result generation with unitTest.c
         {
             char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
 
@@ -253,7 +253,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         switch (symbol)
         {
         case '+':
-            if (/*optimization[0]*/0) 
+            if (optimization[0]) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '+')
                 {
@@ -268,7 +268,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '-':
-            if (/*optimization[0]*/0) 
+            if (optimization[0]) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '-')
                 {
@@ -283,7 +283,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '>':
-            if (/*optimization[1]*/0) 
+            if (optimization[1]) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '>')
                 {
@@ -301,7 +301,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '<':
-            if (/*optimization[1]*/0)
+            if (optimization[1]) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '<')
                 {
