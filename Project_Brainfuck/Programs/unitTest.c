@@ -170,6 +170,6 @@ int main()
 
     allTest("HelloWorld.txt", "");
     allTest("BubbleSourt.txt", "baabz");
-    
+    allTest("Squares.txt", "");
     return 0;
 }

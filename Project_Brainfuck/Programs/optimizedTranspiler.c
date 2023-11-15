@@ -161,9 +161,89 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         char symbol = (char) file_string[i];
         int c = 0;
         int tempi = i;
-        
-        /*Level 2 Optimizations cells[xxx]+=xxx;, cells[xxx]-=xxx; */
-        if (optimization[2]) //change to 0 for base result generation with unitTest.c
+
+        /*Level 3 Simple loop optimizations*/
+        //if no sub loops, no input/output, all increments/decrements of P[start] add up to -1, we are running the loop body p[0] times
+        if /*(optimization[3] && symbol == '[')*/(0) //change to 0 
+        {   
+            //Incrementing so we dont look at the start bracket.
+            i++;
+            symbol = (char) file_string[i];
+
+            //printf("Testing Loop Optimization\n");
+            int p_start_change = 0;
+            char applicable = 1;
+            int movements = 0;
+
+            int multiplier_index = 0;
+            int multiplier_movements[1000];
+            int multipliers[1000];
+            memset(multipliers, 0, 1000);
+            memset(multiplier_movements, 0, 1000);
+            while (symbol != ']')
+            {
+                //Optimization not applicable with subloops, input/output
+                if (symbol == '[' || symbol == ',' || symbol == '.') { 
+                    applicable = 0;
+                    break;
+                } 
+                
+                //All movements must add up to 0
+                if (symbol == '>') movements++;
+                if (symbol == '<') movements--;
+
+                if (symbol == '-' && movements == 0) p_start_change--;
+                if (symbol == '+' && movements == 0) p_start_change++; 
+                
+                //Optimizing increments in loop
+                while ((symbol == '+' || symbol == '-') && movements != 0)
+                {
+                    if (symbol == '+') multipliers[multiplier_index]++;
+                    else multipliers[multiplier_index]--;
+
+                    i++;
+                    symbol = (char) file_string[i];
+                }
+                if (multipliers[multiplier_index] != 0) { 
+                    multiplier_movements[multiplier_index] = movements;
+                    multiplier_index++;
+                    //rerole symbol after while loop fence problem
+                    i--;
+                    symbol = (char) file_string[i];
+                }
+
+                i++;
+                symbol = (char) file_string[i];
+            }
+            
+            if (!applicable || p_start_change != -1 || movements != 0)
+            {
+                //printf("Loop optimization not applicable");
+                i = tempi;
+                symbol = (char) file_string[i];
+                c = 0;
+            } else {
+                //printf("Loop optimization applied");
+                fprintf(transpiled, "/*Starting loop optimization*/\n");
+                for (int j = 0; j < multiplier_index; j++)
+                {   
+                    fprintf(transpiled, "if(idx+%d < 0 || idx+%d > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", multiplier_movements[j], multiplier_movements[j]);
+                    fprintf(transpiled, "cells[idx+%d] += %d*cells[idx]; \n", multiplier_movements[j],multipliers[j]);
+                }
+                fprintf(transpiled, "cells[idx] = 0;\n");
+                fprintf(transpiled, "/*end loop optimization*/\n");
+                
+                //skipping ']' at end of loop
+                i++;
+                symbol = (char) file_string[i];
+
+                //updating current tempi
+                tempi = i;
+            }
+        } //end of optimization 3
+
+        /*Level 2 Optimizations >++< -> cells[xxx]+=xxx;, cells[xxx]-=xxx; */
+        if /*(optimization[2])*/(0) //change to 0 for base result generation with unitTest.c
         {
             char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
 
@@ -253,7 +333,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         switch (symbol)
         {
         case '+':
-            if (optimization[0]) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[0])*/(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '+')
                 {
@@ -268,7 +348,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '-':
-            if (optimization[0]) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[0])*/(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '-')
                 {
@@ -283,7 +363,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '>':
-            if (optimization[1]) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[1])*/(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '>')
                 {
@@ -301,7 +381,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '<':
-            if (optimization[1]) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[1])*/(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '<')
                 {
@@ -323,7 +403,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             fprintf(transpiled, "cells[idx] = input[input_pointer];\n");
             fprintf(transpiled, "input_pointer++;\n");
             fprintf(transpiled, "} else {\n");
-            fprintf(transpiled, "printf(\"Insufficient input length\");}\n");
+            fprintf(transpiled, "printf(\"Insufficient input length\"); return -1;}\n");
             break;
         
         case '.':
