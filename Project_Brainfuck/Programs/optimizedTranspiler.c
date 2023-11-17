@@ -188,7 +188,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
 
         /*Level 3 Simple loop optimizations*/
         //if no sub loops, no input/output, all increments/decrements of P[start] add up to -1, we are running the loop body p[0] times
-        if (optimization[3] && symbol == '[') //change to 0 
+        if /*(optimization[3] && symbol == '[')*/ (0) //change to 0 
         {   
             //Incrementing so we dont look at the start bracket.
             i++;
@@ -267,7 +267,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         } //end of optimization 3
 
         /*Level 2 Optimizations >++< -> cells[xxx]+=xxx;, cells[xxx]-=xxx; */
-        if (optimization[2]) //change to 0 for base result generation with unitTest.c
+        if /*(optimization[2])*/ (0) //change to 0 for base result generation with unitTest.c
         {
             char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
 
@@ -357,7 +357,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         switch (symbol)
         {
         case '+':
-            if (optimization[0])//(0) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[0])*/ (0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '+')
                 {
@@ -372,7 +372,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '-':
-            if (optimization[0])//(0) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[0])*/ (0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '-')
                 {
@@ -387,7 +387,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '>':
-            if (optimization[1])//(0) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[1])*/ (0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '>')
                 {
@@ -405,7 +405,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '<':
-            if (optimization[1])//(0) //change to 0 for base result generation with unitTest.c
+            if /*(optimization[1])*/ (0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '<')
                 {
