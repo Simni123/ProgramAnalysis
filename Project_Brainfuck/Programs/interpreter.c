@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <time.h>
+#include <math.h>
 
 FILE* openFile(char *folder_path, char *file_name) {
     DIR *folder = opendir(folder_path);
@@ -215,6 +216,7 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
 
         //Collecting time
         all_times[t] = (double) (end_time-start_time)/CLOCKS_PER_SEC;
+        all_times[t] = log(all_times[t]);
     }
 
     /*Printing the results*/
@@ -242,7 +244,14 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
     double mean_time = sum_time/(double)time_measures;
 
     fprintf(output_file, "\nMean: %f", mean_time);
+    double std = 0;
+    for (int i = 0; i < time_measures; i++)
+    {
+        std += pow(all_times[i]-mean_time, 2);
+    }
+    std = sqrt(std / time_measures);
     
+    fprintf(output_file, " +- %f dB s", std);
     
 }
 

@@ -2,6 +2,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <string.h>
 
 FILE* openFile(char *folder_path, char *file_name) {
     DIR *folder = opendir(folder_path);
@@ -93,9 +94,10 @@ int fsize(FILE *fp){
     return sz;
 }
 
-void initFile(FILE* transpiled, char *file_name, char *optimization, int optimization_count) {
+void initFile(FILE* transpiled, char *file_name, char *optimization, int optimization_count, int time_measures) {
     fprintf(transpiled, "#include <stdio.h>\n");
     fprintf(transpiled, "#include <dirent.h>\n");
+    fprintf(transpiled, "#include <string.h>\n");
     fprintf(transpiled, "\n");
     fprintf(transpiled, "\n");
 
@@ -133,8 +135,12 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "FILE *tFile = fopen(transpiled_file_path, \"w+\");\n");
     fprintf(transpiled, "if (tFile == NULL) { printf(\"Could not create file\\n\"); return NULL;}\n");
     fprintf(transpiled, "return tFile;\n");
-    fprintf(transpiled, "}\n");
-    fprintf(transpiled, "\n");
+
+    /*Creating new file to store result*/
+    fprintf(transpiled, "char *result_folder_path = \"../UnitTestFiles\";\n");
+    fprintf(transpiled, "FILE *result_file = createFile(result_folder_path,\"%s\");\n", file_name);
+    fprintf(transpiled, "fprintf(result_file,\"Output: \");\n\n");
+    fprintf(transpiled, "}\n\n");
 
     /*adding main method*/
     fprintf(transpiled, "int main (int argc, char **argv) {\n");
@@ -146,11 +152,23 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
     fprintf(transpiled, "memset(cells, 0, cellCount);\n");
     fprintf(transpiled, "int idx = 0;\n");
+    fprintf(transpiled, "unsigned char output[1024];\n");
+    fprintf(transpiled, "memset(output, 0, sizeof(output));\n");
+    fprintf(transpiled, "int outputIdx = 0;\n");
     
-    /*Creating new file to transpile into*/
-    fprintf(transpiled, "char *result_folder_path = \"../UnitTestFiles\";\n");
-    fprintf(transpiled, "FILE *result_file = createFile(result_folder_path,\"%s\");\n", file_name);
-    fprintf(transpiled, "fprintf(result_file,\"Output: \");\n");
+    /*Adding the timer*/
+    fprintf(transpiled, "time_measures = %d;\n", time_measures);
+    fprintf(transpiled, "double all_times[time_measures];\n");
+    fprintf(transpiled, "for (int t = 0; t < time_measures; t++) {\n");
+
+    /*Resetting all state variables*/
+    fprintf(transpiled, "clock_t start_time, end_time;\n");
+    fprintf(transpiled, "start_time = clock();\n");
+    fprintf(transpiled, "input_pointer = 0;\n");
+    fprintf(transpiled, "memset(cells, 0, cellCount);\n");
+    fprintf(transpiled, "idx = 0;\n");
+    fprintf(transpiled, "memset(output, 0, sizeof(output));\n");
+    fprintf(transpiled, "outputIdx = 0;\n");
 }
 
 void transpiler(char *file_string, const int file_size, FILE* transpiled, char *optimization) {
@@ -407,7 +425,9 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '.':
-            fprintf(transpiled,"fprintf(result_file,\"%%c\", (char) cells[idx]);\n");
+            fprintf(transpiled,"if(outputIdx > 1024) {printf(\"insuficient output length\"); return;}\n");
+            fprintf(transpiled,"output[outputIdx] = cells[idx];\n");
+            fprintf(transpiled,"outputIdx++;\n");
             break;
         
         case '[':
@@ -435,6 +455,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
 
 int main(int argc, char **argv) {
     char *program_folder_path = "../BrainFuck_Programs";
+    int time_measurements = 10;
 
     /*Loading in file*/
     char *file_name = argv[1];
@@ -478,7 +499,7 @@ int main(int argc, char **argv) {
     /*Creating new file to transpile into*/
     char *transpiled_folder_path = "../OptimizedTranspiling";
     FILE *tranpiled_file = createFile(transpiled_folder_path,file_name, optimizations, optimization_count);
-    initFile(tranpiled_file, file_name, optimizations, optimization_count); //initializing file methods
+    initFile(tranpiled_file, file_name, optimizations, optimization_count, time_measurements); //initializing file methods
 
     /*Starting the transpiler*/
     transpiler(file_string, file_size, tranpiled_file, optimizations);
