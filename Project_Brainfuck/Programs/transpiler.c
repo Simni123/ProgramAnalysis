@@ -142,10 +142,12 @@ void initFile(FILE* transpiled, char *file_name, int time_measures) {
     fprintf(transpiled, "int time_measures = %d;\n", time_measures);
     fprintf(transpiled, "double all_times[time_measures];\n");
     fprintf(transpiled, "for (int t = 0; t < time_measures; t++) {\n");
-
-    /*Resetting all state variables*/
     fprintf(transpiled, "clock_t start_time, end_time;\n");
     fprintf(transpiled, "start_time = clock();\n");
+    fprintf(transpiled, "for (int k = 0; k < 100000; k++) {\n");
+    
+
+    /*Resetting all state variables*/
     fprintf(transpiled, "input_pointer = 0;\n");
     fprintf(transpiled, "memset(cells, 0, cellCount);\n");
     fprintf(transpiled, "idx = 0;\n");
@@ -209,11 +211,11 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled) {
             break;
         }   
     }
-    
+    fprintf(transpiled, "}\n"); //closing inner time loop
     fprintf(transpiled, "end_time = clock();\n");
     fprintf(transpiled, "all_times[t] = (double) (end_time-start_time)/CLOCKS_PER_SEC;\n");
     //fprintf(transpiled, "all_times[t] = log(all_times[t]);\n");
-    fprintf(transpiled, "}\n"); //ending the timer loop
+    fprintf(transpiled, "}\n"); //closing outer time loop
     
     //exstract results
     fprintf(transpiled, "fprintf(result_file, \"Output: \");\n");

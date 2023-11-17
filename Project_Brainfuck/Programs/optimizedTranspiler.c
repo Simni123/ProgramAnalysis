@@ -98,6 +98,8 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "#include <stdio.h>\n");
     fprintf(transpiled, "#include <dirent.h>\n");
     fprintf(transpiled, "#include <string.h>\n");
+    fprintf(transpiled, "#include <time.h>\n");
+    fprintf(transpiled, "#include <math.h>\n");
     fprintf(transpiled, "\n");
     fprintf(transpiled, "\n");
 
@@ -136,14 +138,12 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "if (tFile == NULL) { printf(\"Could not create file\\n\"); return NULL;}\n");
     fprintf(transpiled, "return tFile;\n");
 
+    /*adding main method*/
+    fprintf(transpiled, "int main (int argc, char **argv) {\n");
     /*Creating new file to store result*/
     fprintf(transpiled, "char *result_folder_path = \"../UnitTestFiles\";\n");
     fprintf(transpiled, "FILE *result_file = createFile(result_folder_path,\"%s\");\n", file_name);
-    fprintf(transpiled, "fprintf(result_file,\"Output: \");\n\n");
-    fprintf(transpiled, "}\n\n");
 
-    /*adding main method*/
-    fprintf(transpiled, "int main (int argc, char **argv) {\n");
     fprintf(transpiled, "int input_pointer = 0;\n");
     fprintf(transpiled, "char *input;\n");
     fprintf(transpiled, "int input_len = 0;\n");
@@ -157,13 +157,15 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "int outputIdx = 0;\n");
     
     /*Adding the timer*/
-    fprintf(transpiled, "time_measures = %d;\n", time_measures);
+    fprintf(transpiled, "int time_measures = %d;\n", time_measures);
     fprintf(transpiled, "double all_times[time_measures];\n");
     fprintf(transpiled, "for (int t = 0; t < time_measures; t++) {\n");
-
-    /*Resetting all state variables*/
     fprintf(transpiled, "clock_t start_time, end_time;\n");
     fprintf(transpiled, "start_time = clock();\n");
+    fprintf(transpiled, "for (int k = 0; k < 100000; k++) {\n");
+    
+
+    /*Resetting all state variables*/
     fprintf(transpiled, "input_pointer = 0;\n");
     fprintf(transpiled, "memset(cells, 0, cellCount);\n");
     fprintf(transpiled, "idx = 0;\n");
@@ -443,13 +445,39 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         }
     }
-    // END OF MAIN
-    fprintf(transpiled, "fprintf(result_file,\"\\nResult:\");\n");
-    fprintf(transpiled, "for(int i = 0; i < cellCount; i++) {\n");
-    fprintf(transpiled, "if (i%%10==0) fprintf(result_file,\"\\n\");\n");
-    fprintf(transpiled, "fprintf(result_file,\"[%%d]\",cells[i]);\n");
+    fprintf(transpiled, "}\n"); //closing inner time loop
+    fprintf(transpiled, "end_time = clock();\n");
+    fprintf(transpiled, "all_times[t] = (double) (end_time-start_time)/CLOCKS_PER_SEC;\n");
+    //fprintf(transpiled, "all_times[t] = log(all_times[t]);\n");
+    fprintf(transpiled, "}\n"); //closing outer time loop
+    
+    //exstract results
+    fprintf(transpiled, "fprintf(result_file, \"Output: \");\n");
+    fprintf(transpiled, "for (int i = 0; i < outputIdx; i++){\n");
+    fprintf(transpiled, "fprintf(result_file,\"%%c\", (char) output[i]);\n");
     fprintf(transpiled, "}\n");
-    fprintf(transpiled, "}");
+    fprintf(transpiled, "fprintf(result_file, \"\\n\");\n");
+    fprintf(transpiled, "fprintf(result_file, \"Result:\");\n");
+    fprintf(transpiled, "for (int i = 0; i < cellCount ; i++){\n");
+    fprintf(transpiled, "if (i%%10 == 0) fprintf(result_file, \"\\n\");\n"); 
+    fprintf(transpiled, "fprintf(result_file, \"[%%d]\",cells[i]);\n");
+    fprintf(transpiled, "}\n");
+    fprintf(transpiled, "double sum_time = 0;\n");
+    fprintf(transpiled, "fprintf(result_file, \"\\nTimes: \");\n");
+    fprintf(transpiled, "for (int i = 0; i < time_measures; i++){\n");
+    fprintf(transpiled, "fprintf(result_file, \"%%f, \", all_times[i]);\n");
+    fprintf(transpiled, "sum_time += all_times[i];\n");
+    fprintf(transpiled, "}\n"); 
+    fprintf(transpiled, "double mean_time = sum_time/(double)time_measures;\n");
+    fprintf(transpiled, "fprintf(result_file, \"\\nMean: %%f\", mean_time);\n");
+    fprintf(transpiled, "double std = 0;\n");
+    fprintf(transpiled, "for (int i = 0; i < time_measures; i++){\n");
+    fprintf(transpiled, "std += pow(all_times[i]-mean_time, 2);\n");
+    fprintf(transpiled, "}\n");
+    fprintf(transpiled, "std = sqrt(std / time_measures);\n");
+    fprintf(transpiled, "fprintf(result_file, \" +- %%f dBs\", std);\n");
+   
+    fprintf(transpiled, "}"); // end of main
     fclose(transpiled);
 }
 
