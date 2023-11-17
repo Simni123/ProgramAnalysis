@@ -168,7 +168,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled) {
             fprintf(transpiled, "cells[idx] = input[input_pointer];\n");
             fprintf(transpiled, "input_pointer++;\n");
             fprintf(transpiled, "} else {\n");
-            fprintf(transpiled, "printf(\"Insufficient input length\");}\n");
+            fprintf(transpiled, "printf(\"Insufficient input length\"); return -1;}\n");
             break;
         
         case '.':
