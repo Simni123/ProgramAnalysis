@@ -137,6 +137,7 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "FILE *tFile = fopen(transpiled_file_path, \"w+\");\n");
     fprintf(transpiled, "if (tFile == NULL) { printf(\"Could not create file\\n\"); return NULL;}\n");
     fprintf(transpiled, "return tFile;\n");
+    fprintf(transpiled, "};\n");
 
     /*adding main method*/
     fprintf(transpiled, "int main (int argc, char **argv) {\n");
@@ -157,20 +158,23 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "int outputIdx = 0;\n");
     
     /*Adding the timer*/
+    /*//comment in timer
     fprintf(transpiled, "int time_measures = %d;\n", time_measures);
     fprintf(transpiled, "double all_times[time_measures];\n");
     fprintf(transpiled, "for (int t = 0; t < time_measures; t++) {\n");
     fprintf(transpiled, "clock_t start_time, end_time;\n");
     fprintf(transpiled, "start_time = clock();\n");
+    
     fprintf(transpiled, "for (int k = 0; k < 100000; k++) {\n");
     
 
-    /*Resetting all state variables*/
+    //Resetting all state variables
     fprintf(transpiled, "input_pointer = 0;\n");
     fprintf(transpiled, "memset(cells, 0, cellCount);\n");
     fprintf(transpiled, "idx = 0;\n");
     fprintf(transpiled, "memset(output, 0, sizeof(output));\n");
     fprintf(transpiled, "outputIdx = 0;\n");
+    */
 }
 
 void transpiler(char *file_string, const int file_size, FILE* transpiled, char *optimization) {
@@ -184,7 +188,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
 
         /*Level 3 Simple loop optimizations*/
         //if no sub loops, no input/output, all increments/decrements of P[start] add up to -1, we are running the loop body p[0] times
-        if /*(optimization[3] && symbol == '[')*/(0) //change to 0 
+        if (optimization[3] && symbol == '[') //change to 0 
         {   
             //Incrementing so we dont look at the start bracket.
             i++;
@@ -263,7 +267,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         } //end of optimization 3
 
         /*Level 2 Optimizations >++< -> cells[xxx]+=xxx;, cells[xxx]-=xxx; */
-        if /*(optimization[2])*/(0) //change to 0 for base result generation with unitTest.c
+        if (optimization[2]) //change to 0 for base result generation with unitTest.c
         {
             char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
 
@@ -353,7 +357,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         switch (symbol)
         {
         case '+':
-            if /*(optimization[0])*/(0) //change to 0 for base result generation with unitTest.c
+            if (optimization[0])//(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '+')
                 {
@@ -368,7 +372,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '-':
-            if /*(optimization[0])*/(0) //change to 0 for base result generation with unitTest.c
+            if (optimization[0])//(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '-')
                 {
@@ -383,7 +387,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '>':
-            if /*(optimization[1])*/(0) //change to 0 for base result generation with unitTest.c
+            if (optimization[1])//(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '>')
                 {
@@ -401,7 +405,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
 
         case '<':
-            if /*(optimization[1])*/(0) //change to 0 for base result generation with unitTest.c
+            if (optimization[1])//(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '<')
                 {
@@ -427,7 +431,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         
         case '.':
-            fprintf(transpiled,"if(outputIdx > 1024) {printf(\"insuficient output length\"); return;}\n");
+            fprintf(transpiled,"if(outputIdx > 1024) {printf(\"insuficient output length\"); return -1;}\n");
             fprintf(transpiled,"output[outputIdx] = cells[idx];\n");
             fprintf(transpiled,"outputIdx++;\n");
             break;
@@ -445,11 +449,13 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             break;
         }
     }
+    /* //comment in timer
     fprintf(transpiled, "}\n"); //closing inner time loop
     fprintf(transpiled, "end_time = clock();\n");
     fprintf(transpiled, "all_times[t] = (double) (end_time-start_time)/CLOCKS_PER_SEC;\n");
     //fprintf(transpiled, "all_times[t] = log(all_times[t]);\n");
     fprintf(transpiled, "}\n"); //closing outer time loop
+    */
     
     //exstract results
     fprintf(transpiled, "fprintf(result_file, \"Output: \");\n");
@@ -462,6 +468,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     fprintf(transpiled, "if (i%%10 == 0) fprintf(result_file, \"\\n\");\n"); 
     fprintf(transpiled, "fprintf(result_file, \"[%%d]\",cells[i]);\n");
     fprintf(transpiled, "}\n");
+    /*//comment in timer
     fprintf(transpiled, "double sum_time = 0;\n");
     fprintf(transpiled, "fprintf(result_file, \"\\nTimes: \");\n");
     fprintf(transpiled, "for (int i = 0; i < time_measures; i++){\n");
@@ -476,6 +483,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     fprintf(transpiled, "}\n");
     fprintf(transpiled, "std = sqrt(std / time_measures);\n");
     fprintf(transpiled, "fprintf(result_file, \" +- %%f dBs\", std);\n");
+    */
    
     fprintf(transpiled, "}"); // end of main
     fclose(transpiled);
