@@ -95,13 +95,13 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
     int input_pointer = 0;
     // Cells
     unsigned char cells[cellCount];
-    memset(cells, 0, cellCount);
+    memset(cells, 0, cellCount*sizeof(char));
     // Loop nesting tracker
     int loop_array[100];
-    memset(loop_array, 0, sizeof(loop_array));
+    memset(loop_array, 0, 100*sizeof(int));
     // Output array
     unsigned char output[1024];
-    memset(output, 0, sizeof(output));
+    memset(output, 0, 1024*sizeof(char));
     int outputIdx = 0;
     int loop_pointer = -1;
 
@@ -119,11 +119,11 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
             data_pointer = 0;
             input_pointer = 0;
             // cells
-            memset(cells, 0, cellCount);
+            memset(cells, 0, cellCount*sizeof(char));
             // Loop nesting tracker
-            memset(loop_array, 0, sizeof(loop_array));
+            memset(loop_array, 0, 100*sizeof(int));
             // Output array
-            memset(output, 0, sizeof(output));
+            memset(output, 0, 1024*sizeof(char));
             outputIdx = 0;
             loop_pointer = -1;
 

@@ -127,7 +127,7 @@ void initFile(FILE* transpiled, char *file_name) {
     fprintf(transpiled, "if (argc == 2) {input = argv[1]; input_len = strlen(input);}\n");
     fprintf(transpiled, "const int cellCount = 100;\n");
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
-    fprintf(transpiled, "memset(cells, 0, cellCount);\n");
+    fprintf(transpiled, "memset(cells, 0, cellCount*sizeof(char));\n");
     fprintf(transpiled, "int idx = 0;\n");
     
     /*Creating new file to transpile into*/

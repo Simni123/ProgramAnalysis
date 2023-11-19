@@ -151,10 +151,10 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "if (argc == 2) {input = argv[1]; input_len = strlen(input);}\n");
     fprintf(transpiled, "const int cellCount = 100;\n");
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
-    fprintf(transpiled, "memset(cells, 0, cellCount);\n");
+    fprintf(transpiled, "memset(cells, 0, cellCount*sizeof(char));\n");
     fprintf(transpiled, "int idx = 0;\n");
     fprintf(transpiled, "unsigned char output[1024];\n");
-    fprintf(transpiled, "memset(output, 0, sizeof(output));\n");
+    fprintf(transpiled, "memset(output, 0, 1024*sizeof(char));\n");
     fprintf(transpiled, "int outputIdx = 0;\n");
     
     /*Adding the timer*/
@@ -202,8 +202,8 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             int multiplier_index = 0;
             int multiplier_movements[1000];
             int multipliers[1000];
-            memset(multipliers, 0, 1000);
-            memset(multiplier_movements, 0, 1000);
+            memset(multipliers, 0, 1000*sizeof(int));
+            memset(multiplier_movements, 0, 1000*sizeof(int));
             while (symbol != ']')
             {
                 //Optimization not applicable with subloops, input/output
@@ -267,16 +267,21 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         } //end of optimization 3
         
         /*Level 2 Optimizations >++< -> cells[xxx]+=xxx;, cells[xxx]-=xxx; */
-        if (optimization[2]) //(0) //change to 0 for base result generation with unitTest.c
+        if (optimization[2] && (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-')) //(0) //change to 0 for base result generation with unitTest.c
         {   
             // New level 2 optimizations
 
             //Making an array doubled
             int cIdx = 100 - 1;
-            int currentArray[100*2];
+            int currentArray[100*2]; // change to cell count
+            memset(currentArray, 0, 200*sizeof(int)); //chnage to cell count
+            printf("zero array:"); 
             for (int k = 0; k < 200; k++) {
-                currentArray[k] = 0;
+                //currentArray[k] = 0;
+                printf("%d", currentArray[k]);
             }
+            printf("\n");
+           
 
             while (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-') 
             {
@@ -398,6 +403,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             
 
             //Resetting initializations for the rest to run correctly
+            continue;
             symbol = (char) file_string[i];
             c = 0;
         } //end of optimization level 2
