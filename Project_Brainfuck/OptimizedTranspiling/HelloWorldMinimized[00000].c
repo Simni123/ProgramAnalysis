@@ -42,7 +42,7 @@ return tFile;
 };
 int main (int argc, char **argv) {
 char *result_folder_path = "../UnitTestFiles";
-FILE *result_file = createFile(result_folder_path,"HelloWorld.txt");
+FILE *result_file = createFile(result_folder_path,"HelloWorldMinimized.txt");
 int input_pointer = 0;
 char *input;
 int input_len = 0;
@@ -54,76 +54,6 @@ int idx = 0;
 unsigned char output[1024];
 memset(output, 0, 1024*sizeof(char));
 int outputIdx = 0;
-while (cells[idx] != 0) {
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
-output[outputIdx] = cells[idx];
-outputIdx++;
-while (cells[idx] != 0) {
-if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
-output[outputIdx] = cells[idx];
-outputIdx++;
-}
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
-output[outputIdx] = cells[idx];
-outputIdx++;
-if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
-output[outputIdx] = cells[idx];
-outputIdx++;
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-cells[idx]++;
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-cells[idx]--;
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-idx--;
-if(idx > cellCount && idx < 0) {printf("idx less than zero"); return -1;}
-idx++;
-if(idx > cellCount && idx < 0) {printf("insufficient cellcount"); return -1;}
-if (input_pointer <= 255) {
-cells[idx] = input[input_pointer];
-input_pointer++;
-} else {
-printf("Insufficient input length"); return -1;}
-while (cells[idx] != 0) {
-}
-if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
-output[outputIdx] = cells[idx];
-outputIdx++;
-if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
-output[outputIdx] = cells[idx];
-outputIdx++;
-}
 cells[idx]++;
 cells[idx]++;
 cells[idx]++;
@@ -132,6 +62,7 @@ cells[idx]++;
 cells[idx]++;
 cells[idx]++;
 cells[idx]++;
+printf("cells[%d] = %d \n", idx, cells[idx]);
 while (cells[idx] != 0) {
 idx++;
 if(idx > cellCount && idx < 0) {printf("insufficient cellcount"); return -1;}
@@ -140,6 +71,7 @@ cells[idx]++;
 cells[idx]++;
 cells[idx]++;
 while (cells[idx] != 0) {
+printf("cells[%d] = %d \n", idx, cells[idx]);    
 idx++;
 if(idx > cellCount && idx < 0) {printf("insufficient cellcount"); return -1;}
 cells[idx]++;
@@ -166,6 +98,7 @@ if(idx > cellCount && idx < 0) {printf("idx less than zero"); return -1;}
 idx--;
 if(idx > cellCount && idx < 0) {printf("idx less than zero"); return -1;}
 cells[idx]--;
+
 }
 idx++;
 if(idx > cellCount && idx < 0) {printf("insufficient cellcount"); return -1;}
@@ -181,6 +114,12 @@ if(idx > cellCount && idx < 0) {printf("insufficient cellcount"); return -1;}
 idx++;
 if(idx > cellCount && idx < 0) {printf("insufficient cellcount"); return -1;}
 cells[idx]++;
+/*FIRST*/
+printf("Array1: ");
+for (int k = 0; k < 8; k++) {
+    printf("%d ",cells[k]);
+}
+printf("\n");
 while (cells[idx] != 0) {
 idx--;
 if(idx > cellCount && idx < 0) {printf("idx less than zero"); return -1;}
@@ -282,7 +221,6 @@ cells[idx]++;
 if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
 output[outputIdx] = cells[idx];
 outputIdx++;
-cells[idx]--;
 fprintf(result_file, "Output: ");
 for (int i = 0; i < outputIdx; i++){
 fprintf(result_file,"%c", (char) output[i]);

@@ -304,13 +304,13 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             for (int j = 0; j < 100*2; j++) 
             {
                 if (currentArray[j] != 0) {
-                    fprintf(transpiled, "if(idx+%d < 0 || idx+%d > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", j - 99, currentArray[j]);
-                    fprintf(transpiled, "cells[idx+%d] += %d+cells[idx]; \n", j - 99,currentArray[j]);
+                    fprintf(transpiled, "if(idx+(%d) < 0 || idx+(%d) > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", j - 99, currentArray[j]);
+                    fprintf(transpiled, "cells[idx+(%d)] = cells[idx+(%d)]+(%d); \n", j - 99,j-99,currentArray[j]);
                 }
             }
             if (cIdx != 99) {
 
-                fprintf(transpiled, "idx += %d;\n", cIdx-99);
+                fprintf(transpiled, "idx += (%d);\n", cIdx-99);
                 fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
                 fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
             }
@@ -401,11 +401,10 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             }  
             */
             
-
+            c = 0;
+            symbol = (char) file_string[i];
             //Resetting initializations for the rest to run correctly
             continue;
-            symbol = (char) file_string[i];
-            c = 0;
         } //end of optimization level 2
         
         /*Level 0-1 optimizations + nonOptimized parts*/

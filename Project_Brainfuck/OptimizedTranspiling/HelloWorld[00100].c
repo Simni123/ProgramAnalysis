@@ -309,6 +309,10 @@ if(idx > cellCount && idx < 0) {printf("insufficient cellcount"); return -1;}
 if(outputIdx > 1024) {printf("insuficient output length"); return -1;}
 output[outputIdx] = cells[idx];
 outputIdx++;
+/*Starting combined level 2 optimization*/
+if(idx+0 < 0 || idx+-1 > cellCount) {printf("insufficient cell count"); return -1;} 
+cells[idx+0] += -1+cells[idx]; 
+/*Ending combined level 2 optimization*/
 fprintf(result_file, "Output: ");
 for (int i = 0; i < outputIdx; i++){
 fprintf(result_file,"%c", (char) output[i]);
