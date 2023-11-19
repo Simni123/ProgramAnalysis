@@ -265,10 +265,54 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
                 tempi = i;
             }
         } //end of optimization 3
-
+        
         /*Level 2 Optimizations >++< -> cells[xxx]+=xxx;, cells[xxx]-=xxx; */
-        if /*(optimization[2])*/ (0) //change to 0 for base result generation with unitTest.c
-        {
+        if (optimization[2]) //(0) //change to 0 for base result generation with unitTest.c
+        {   
+            // New level 2 optimizations
+
+            //Making an array doubled
+            int cIdx = 100 - 1;
+            int currentArray[100*2];
+            for (int k = 0; k < 200; k++) {
+                currentArray[k] = 0;
+            }
+
+            while (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-') 
+            {
+                printf("currentArray[%d]: %d \n", cIdx,currentArray[cIdx]);
+                if (cIdx < 0 || cIdx > 199) {
+                    printf("non compilable brainfuck program");
+                    return;
+                }
+
+                if(symbol == '+') currentArray[cIdx]+=1;
+                else if(symbol == '-') currentArray[cIdx]+=-1;
+                else if(symbol == '>') cIdx++;
+                else cIdx--;
+
+                i++;
+                symbol = (char) file_string[i];
+            }
+            i--;
+            fprintf(transpiled, "/*Starting combined level 2 optimization*/\n");
+            for (int j = 0; j < 100*2; j++) 
+            {
+                if (currentArray[j] != 0) {
+                    fprintf(transpiled, "if(idx+%d < 0 || idx+%d > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", j - 99, currentArray[j]);
+                    fprintf(transpiled, "cells[idx+%d] += %d+cells[idx]; \n", j - 99,currentArray[j]);
+                }
+            }
+            if (cIdx != 99) {
+
+                fprintf(transpiled, "idx += %d;\n", cIdx-99);
+                fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
+                fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
+            }
+
+            fprintf(transpiled, "/*Ending combined level 2 optimization*/\n");
+
+            /*
             char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
 
             //Counting the potential move fuse
@@ -344,9 +388,14 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
                 }
                 
                 //Applying the valid optimization or resetting the reader to original symbol
-                if (valid) fprintf(transpiled, optimizedString);
-                else i = tempi;
-            }
+                if (valid) {
+                    fprintf(transpiled, "//Starting Combined optimization\n");
+                    fprintf(transpiled, optimizedString);
+                    fprintf(transpiled, "//ending Combined optimization\n");
+                } else i = tempi;
+            }  
+            */
+            
 
             //Resetting initializations for the rest to run correctly
             symbol = (char) file_string[i];
@@ -357,67 +406,79 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
         switch (symbol)
         {
         case '+':
-            if /*(optimization[0])*/ (0) //change to 0 for base result generation with unitTest.c
+            if (optimization[0]) //(0) //change to 0 for base result generation with unitTest.c
             {
-                while (symbol == '+')
+                while (symbol == '+' || symbol == '-')
                 {
-                    c++;
+                    if (symbol == '+') c++;
+                    else c--;
                     i++;
                     symbol = (char) file_string[i];
                 }
                 i--;
+                fprintf(transpiled, "/*Starting adding optimization*/\n");
                 fprintf(transpiled, "cells[idx]+=%d;\n",c);
+                fprintf(transpiled, "/*ending adding optimization*/\n");
             } else fprintf(transpiled, "cells[idx]++;\n");
             
             break;
         
         case '-':
-            if /*(optimization[0])*/ (0) //change to 0 for base result generation with unitTest.c
+            if (optimization[0]) //(0) //change to 0 for base result generation with unitTest.c
             {
-                while (symbol == '-')
+                while (symbol == '-' || symbol == '+')
                 {
-                    c++;
+                    if (symbol == '+') c++;
+                    else c--;
                     i++;
                     symbol = (char) file_string[i];
                 }
                 i--;
+                fprintf(transpiled, "/*Starting subtraction level 0 optimization*/\n");
                 fprintf(transpiled, "cells[idx]-=%d;\n", c);
+                fprintf(transpiled, "/*ending subtraction level 0 optimization*/\n");
             } else fprintf(transpiled, "cells[idx]--;\n");
             
             break;
 
         case '>':
-            if /*(optimization[1])*/ (0) //change to 0 for base result generation with unitTest.c
+            if (optimization[1]) //(0) //change to 0 for base result generation with unitTest.c
             {
-                while (symbol == '>')
+                while (symbol == '>' || symbol == '<')
                 {
-                    c++;
+                    if (symbol == '>') c++;
+                    else c--;
                     i++;
                     symbol = (char) file_string[i];
                 }
                 i--;
+                fprintf(transpiled, "/*Starting right move level 1 optimization*/\n");
                 fprintf(transpiled, "idx+=%d;\n", c);
+                fprintf(transpiled, "/*Ending right move level 1 optimization*/\n");
             } else fprintf(transpiled, "idx++;\n");
             
-            fprintf(transpiled, "if(idx > cellCount) {");
+            fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
             fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
             
             break;
 
         case '<':
-            if /*(optimization[1])*/ (0) //change to 0 for base result generation with unitTest.c
+            if (optimization[1]) //(0) //change to 0 for base result generation with unitTest.c
             {
-                while (symbol == '<')
+                while (symbol == '<' || symbol == '>')
                 {
-                    c++;
+                    if (symbol == '>') c++;
+                    else c--;
                     i++;
                     symbol = (char) file_string[i];
                 }
                 i--;
+                fprintf(transpiled, "/*Starting left move level 1 optimization*/\n");
                 fprintf(transpiled, "idx-=%d;\n", c);
+                fprintf(transpiled, "/*Starting right move level 1 optimization*/\n");
             } else fprintf(transpiled, "idx--;\n");
 
-            fprintf(transpiled, "if(idx < 0) {");
+            fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
             fprintf(transpiled, "printf(\"idx less than zero\"); return -1;}\n");
             
             break;
@@ -536,6 +597,7 @@ int main(int argc, char **argv) {
     char *transpiled_folder_path = "../OptimizedTranspiling";
     FILE *tranpiled_file = createFile(transpiled_folder_path,file_name, optimizations, optimization_count);
     initFile(tranpiled_file, file_name, optimizations, optimization_count, time_measurements); //initializing file methods
+
 
     /*Starting the transpiler*/
     transpiler(file_string, file_size, tranpiled_file, optimizations);
