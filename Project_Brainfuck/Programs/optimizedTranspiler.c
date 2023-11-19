@@ -4,7 +4,8 @@
 #include <ctype.h>
 #include <string.h>
 
-FILE* openFile(char *folder_path, char *file_name) {
+FILE *openFile(char *folder_path, char *file_name)
+{
     DIR *folder = opendir(folder_path);
     FILE *b_program;
     struct dirent *entry;
@@ -13,15 +14,16 @@ FILE* openFile(char *folder_path, char *file_name) {
     {
         puts("Folder not found error\n");
         return NULL;
-    } 
+    }
 
-    while ((entry=readdir(folder)))
+    while ((entry = readdir(folder)))
     {
         /*Skippin the directory reference files*/
-        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue;
+        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+            continue;
 
         /*OPening only wanted file*/
-        if (!strcmp(entry->d_name,file_name))
+        if (!strcmp(entry->d_name, file_name))
         {
             /*Concatinating the relative file directory string*/
             char file_path[1024];
@@ -35,7 +37,9 @@ FILE* openFile(char *folder_path, char *file_name) {
             {
                 closedir(folder);
                 return b_program;
-            } else {
+            }
+            else
+            {
                 closedir(folder);
                 return NULL;
             }
@@ -45,21 +49,22 @@ FILE* openFile(char *folder_path, char *file_name) {
     return NULL;
 }
 
-FILE* createFile(char *file_path, char *file_name, char *optimization, int optimization_count) {
+FILE *createFile(char *file_path, char *file_name, char *optimization, int optimization_count)
+{
     /*Creating a subfile name without .type*/
-    char file_name_sub[1024]; //WTF whry *2 - find out
+    char file_name_sub[1024]; // WTF whry *2 - find out
     strcpy(file_name_sub, file_name);
     const char deli[] = ".";
     char *token;
     token = strtok(file_name_sub, deli);
-    
+
     /*adding the optimization string on the file*/
-    char optimization_string[optimization_count+2];
+    char optimization_string[optimization_count + 2];
     strcpy(optimization_string, "[");
     for (int i = 0; i < optimization_count; i++)
     {
         char op[2];
-        sprintf(op,"%d",optimization[i]);
+        sprintf(op, "%d", optimization[i]);
         strcat(optimization_string, op);
     }
     strcat(optimization_string, "]");
@@ -69,7 +74,7 @@ FILE* createFile(char *file_path, char *file_name, char *optimization, int optim
     strcpy(transpiled_file_name, token);
     strcat(transpiled_file_name, optimization_string);
     strcat(transpiled_file_name, ".c");
-    
+
     /*Concatinating to the path of storage*/
     char transpiled_file_path[1024];
     strcpy(transpiled_file_path, file_path);
@@ -86,15 +91,17 @@ FILE* createFile(char *file_path, char *file_name, char *optimization, int optim
     return tFile;
 }
 
-int fsize(FILE *fp){
-    int prev=ftell(fp);
+int fsize(FILE *fp)
+{
+    int prev = ftell(fp);
     fseek(fp, 0L, SEEK_END);
-    int sz=ftell(fp);
-    fseek(fp,prev,SEEK_SET); //go back to where we were
+    int sz = ftell(fp);
+    fseek(fp, prev, SEEK_SET); // go back to where we were
     return sz;
 }
 
-void initFile(FILE* transpiled, char *file_name, char *optimization, int optimization_count, int time_measures) {
+void initFile(FILE *transpiled, char *file_name, char *optimization, int optimization_count, int time_measures)
+{
     fprintf(transpiled, "#include <stdio.h>\n");
     fprintf(transpiled, "#include <dirent.h>\n");
     fprintf(transpiled, "#include <string.h>\n");
@@ -156,7 +163,7 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "unsigned char output[1024];\n");
     fprintf(transpiled, "memset(output, 0, 1024*sizeof(char));\n");
     fprintf(transpiled, "int outputIdx = 0;\n");
-    
+
     /*Adding the timer*/
     /*//comment in timer
     fprintf(transpiled, "int time_measures = %d;\n", time_measures);
@@ -164,9 +171,9 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "for (int t = 0; t < time_measures; t++) {\n");
     fprintf(transpiled, "clock_t start_time, end_time;\n");
     fprintf(transpiled, "start_time = clock();\n");
-    
+
     fprintf(transpiled, "for (int k = 0; k < 100000; k++) {\n");
-    
+
 
     //Resetting all state variables
     fprintf(transpiled, "input_pointer = 0;\n");
@@ -177,24 +184,25 @@ void initFile(FILE* transpiled, char *file_name, char *optimization, int optimiz
     */
 }
 
-void transpiler(char *file_string, const int file_size, FILE* transpiled, char *optimization) {
-    
+void transpiler(char *file_string, const int file_size, FILE *transpiled, char *optimization)
+{
+
     /*Runnning through program*/
     for (int i = 0; i < file_size; i++)
-    {   
-        char symbol = (char) file_string[i];
+    {
+        char symbol = (char)file_string[i];
         int c = 0;
         int tempi = i;
 
         /*Level 3 Simple loop optimizations*/
-        //if no sub loops, no input/output, all increments/decrements of P[start] add up to -1, we are running the loop body p[0] times
-        if /*(optimization[3] && symbol == '[')*/ (0) //change to 0 
-        {   
-            //Incrementing so we dont look at the start bracket.
+        // if no sub loops, no input/output, all increments/decrements of P[start] add up to -1, we are running the loop body p[0] times
+        if /*(optimization[3] && symbol == '[')*/ (0) // change to 0
+        {
+            // Incrementing so we dont look at the start bracket.
             i++;
-            symbol = (char) file_string[i];
+            symbol = (char)file_string[i];
 
-            //printf("Testing Loop Optimization\n");
+            // printf("Testing Loop Optimization\n");
             int p_start_change = 0;
             char applicable = 1;
             int movements = 0;
@@ -202,285 +210,194 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             int multiplier_index = 0;
             int multiplier_movements[1000];
             int multipliers[1000];
-            memset(multipliers, 0, 1000*sizeof(int));
-            memset(multiplier_movements, 0, 1000*sizeof(int));
+            memset(multipliers, 0, 1000 * sizeof(int));
+            memset(multiplier_movements, 0, 1000 * sizeof(int));
             while (symbol != ']')
             {
-                //Optimization not applicable with subloops, input/output
-                if (symbol == '[' || symbol == ',' || symbol == '.') { 
+                // Optimization not applicable with subloops, input/output
+                if (symbol == '[' || symbol == ',' || symbol == '.')
+                {
                     applicable = 0;
                     break;
-                } 
-                
-                //All movements must add up to 0
-                if (symbol == '>') movements++;
-                if (symbol == '<') movements--;
+                }
 
-                if (symbol == '-' && movements == 0) p_start_change--;
-                if (symbol == '+' && movements == 0) p_start_change++; 
-                
-                //Optimizing increments in loop
+                // All movements must add up to 0
+                if (symbol == '>')
+                    movements++;
+                if (symbol == '<')
+                    movements--;
+
+                if (symbol == '-' && movements == 0)
+                    p_start_change--;
+                if (symbol == '+' && movements == 0)
+                    p_start_change++;
+
+                // Optimizing increments in loop
                 while ((symbol == '+' || symbol == '-') && movements != 0)
                 {
-                    if (symbol == '+') multipliers[multiplier_index]++;
-                    else multipliers[multiplier_index]--;
+                    if (symbol == '+')
+                        multipliers[multiplier_index]++;
+                    else
+                        multipliers[multiplier_index]--;
 
                     i++;
-                    symbol = (char) file_string[i];
+                    symbol = (char)file_string[i];
                 }
-                if (multipliers[multiplier_index] != 0) { 
+                if (multipliers[multiplier_index] != 0)
+                {
                     multiplier_movements[multiplier_index] = movements;
                     multiplier_index++;
-                    //rerole symbol after while loop fence problem
+                    // rerole symbol after while loop fence problem
                     i--;
-                    symbol = (char) file_string[i];
+                    symbol = (char)file_string[i];
                 }
 
                 i++;
-                symbol = (char) file_string[i];
+                symbol = (char)file_string[i];
             }
-            
+
             if (!applicable || p_start_change != -1 || movements != 0)
             {
-                //printf("Loop optimization not applicable");
+                // printf("Loop optimization not applicable");
                 i = tempi;
-                symbol = (char) file_string[i];
+                symbol = (char)file_string[i];
                 c = 0;
-            } else {
-                //printf("Loop optimization applied");
+            }
+            else
+            {
+                // printf("Loop optimization applied");
                 fprintf(transpiled, "/*Starting loop optimization*/\n");
                 for (int j = 0; j < multiplier_index; j++)
-                {   
+                {
                     fprintf(transpiled, "if(idx+%d < 0 || idx+%d > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", multiplier_movements[j], multiplier_movements[j]);
-                    fprintf(transpiled, "cells[idx+%d] += %d*cells[idx]; \n", multiplier_movements[j],multipliers[j]);
+                    fprintf(transpiled, "cells[idx+%d] += %d*cells[idx]; \n", multiplier_movements[j], multipliers[j]);
                 }
                 fprintf(transpiled, "cells[idx] = 0;\n");
                 fprintf(transpiled, "/*end loop optimization*/\n");
-                
-                //skipping ']' at end of loop
-                i++;
-                symbol = (char) file_string[i];
 
-                //updating current tempi
+                // skipping ']' at end of loop
+                i++;
+                symbol = (char)file_string[i];
+
+                // updating current tempi
                 tempi = i;
             }
-        } //end of optimization 3
-        
+        } // end of optimization 3
+
         /*Level 2 Optimizations >++< -> cells[xxx]+=xxx;, cells[xxx]-=xxx; */
         if (optimization[2] && (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-')) //(0) //change to 0 for base result generation with unitTest.c
-        {   
+        {
             // New level 2 optimizations
 
-            //Making an array doubled
+            // Making an array doubled
             int cIdx = 100 - 1;
-            int currentArray[100*2]; // change to cell count
-            memset(currentArray, 0, 200*sizeof(int)); //chnage to cell count
-           
+            int currentArray[100 * 2];                  // change to cell count
+            memset(currentArray, 0, 200 * sizeof(int)); // chnage to cell count
 
-            while (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-') 
+            while (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-')
             {
-                if (cIdx < 0 || cIdx > 199) {
+                if (cIdx < 0 || cIdx > 199)
+                {
                     printf("non compilable brainfuck program");
                     return;
                 }
 
-                if(symbol == '+') currentArray[cIdx]+=1;
-                else if(symbol == '-') currentArray[cIdx]+=-1;
-                else if(symbol == '>') cIdx++;
-                else cIdx--;
+                if (symbol == '+')
+                    currentArray[cIdx] += 1;
+                else if (symbol == '-')
+                    currentArray[cIdx] += -1;
+                else if (symbol == '>')
+                    cIdx++;
+                else
+                    cIdx--;
 
                 i++;
-                symbol = (char) file_string[i];
+                symbol = (char)file_string[i];
             }
             i--;
             fprintf(transpiled, "/*Starting combined level 2 optimization*/\n");
-            for (int j = 0; j < 100*2; j++) 
+            for (int j = 0; j < 100 * 2; j++)
             {
-                if (currentArray[j] != 0) {
+                if (currentArray[j] != 0)
+                {
                     fprintf(transpiled, "if(idx+(%d) < 0 || idx+(%d) > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", j - 99, currentArray[j]);
-                    fprintf(transpiled, "cells[idx+(%d)] = cells[idx+(%d)]+(%d); \n", j - 99,j-99,currentArray[j]);
+                    fprintf(transpiled, "cells[idx+(%d)] = cells[idx+(%d)]+(%d); \n", j - 99, j - 99, currentArray[j]);
                 }
             }
-            if (cIdx != 99) {
+            if (cIdx != 99)
+            {
 
-                fprintf(transpiled, "idx += (%d);\n", cIdx-99);
+                fprintf(transpiled, "idx += (%d);\n", cIdx - 99);
                 fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
                 fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
             }
 
             fprintf(transpiled, "/*Ending combined level 2 optimization*/\n");
 
-            /*
-            char optimizedString[5+2+4+3+2+3+3+73]; // cells[idx+xxx]+=xxx;\n
-
-            //Counting the potential move fuse
-            while (symbol == '>' || symbol == '<')
-            {
-                if (symbol == '>') c++;
-                else c--;
-                i++;
-                symbol = (char) file_string[i];
-            }
-            int move_count = c;
-            if (c < 0) move_count = -c;
-            
-            char subString[1024];
-            
-            //Continuing only if movement was found
-            if (c != 0)
-            {
-                //Initializing potential optimization string
-                if (c > 0)
-                {
-                    snprintf(subString, 1024, "if(idx+%d > cellCount) {printf(\"insufficient cellcount\"); return -1;}\n", c);
-                    strcpy(optimizedString, subString);
-                    snprintf(subString, 1024, "cells[idx+%d]", c);
-                    strcat(optimizedString, subString);
-                } else {
-                    snprintf(subString, 1024, "if(idx-%d < 0) {printf(\"data pointer < zero\"); return -1;}\n", -c);
-                    strcpy(optimizedString, subString);
-                    snprintf(subString, 1024, "cells[idx-%d]", -c);
-                    strcat(optimizedString, subString);
-                }
-                
-                
-                //Counting additions/subtractions
-                int inc = 0;
-                while (symbol == '+' || symbol == '-')
-                {
-                    if (symbol == '+')
-                        inc++;
-                    else inc--;
-                    i++;
-                    symbol = (char) file_string[i];
-                }
-
-                //Adding addition/subtraction to potential optimization string
-                if (inc < 0) {
-                    snprintf(subString, 1024, "-=%d;\n", -inc);
-                    strcat(optimizedString, subString);
-                }
-                else {
-                    snprintf(subString, 1024, "+=%d;\n", inc);
-                    strcat(optimizedString, subString);
-                }
-
-                //Testing if the ending movements corresponds to the start movements
-                char valid = 0;
-                for (int j = 0; j < move_count; j++)
-                {
-                    if (c > 0 && (symbol != '<' || i > file_size))
-                    {
-                        break;
-                    } else if (c < 0 && (symbol != '>' || i > file_size))
-                    {
-                        break;
-                    }
-                    
-                    i++;
-                    symbol = (char) file_string[i];
-                    if (j+1==move_count)
-                    {
-                    valid=1;
-                    }
-                }
-                
-                //Applying the valid optimization or resetting the reader to original symbol
-                if (valid) {
-                    fprintf(transpiled, "//Starting Combined optimization\n");
-                    fprintf(transpiled, optimizedString);
-                    fprintf(transpiled, "//ending Combined optimization\n");
-                } else i = tempi;
-            }  
-            */
-            
             c = 0;
-            symbol = (char) file_string[i];
-            //Resetting initializations for the rest to run correctly
+            symbol = (char)file_string[i];
+            // Resetting initializations for the rest to run correctly
             continue;
-        } //end of optimization level 2
-        
+        } // end of optimization level 2
+
         /*Level 0-1 optimizations + nonOptimized parts*/
         switch (symbol)
         {
+        case '-':
         case '+':
             if (optimization[0]) //(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '+' || symbol == '-')
                 {
-                    if (symbol == '+') c++;
-                    else c--;
+                    if (symbol == '+')
+                        c++;
+                    else
+                        c--;
                     i++;
-                    symbol = (char) file_string[i];
+                    symbol = (char)file_string[i];
                 }
                 i--;
                 fprintf(transpiled, "/*Starting adding optimization*/\n");
-                fprintf(transpiled, "cells[idx]+=%d;\n",c);
+                fprintf(transpiled, "cells[idx]+=(%d);\n", c);
                 fprintf(transpiled, "/*ending adding optimization*/\n");
-            } else fprintf(transpiled, "cells[idx]++;\n");
-            
-            break;
-        
-        case '-':
-            if (optimization[0]) //(0) //change to 0 for base result generation with unitTest.c
+            }
+            else
             {
-                while (symbol == '-' || symbol == '+')
-                {
-                    if (symbol == '+') c++;
-                    else c--;
-                    i++;
-                    symbol = (char) file_string[i];
-                }
-                i--;
-                fprintf(transpiled, "/*Starting subtraction level 0 optimization*/\n");
-                fprintf(transpiled, "cells[idx]-=%d;\n", c);
-                fprintf(transpiled, "/*ending subtraction level 0 optimization*/\n");
-            } else fprintf(transpiled, "cells[idx]--;\n");
-            
+                if (symbol == '+') fprintf(transpiled, "cells[idx]++;\n");
+                else fprintf(transpiled, "cells[idx]--;\n");
+            }
+
             break;
 
         case '>':
+        case '<':
             if (optimization[1]) //(0) //change to 0 for base result generation with unitTest.c
             {
                 while (symbol == '>' || symbol == '<')
                 {
-                    if (symbol == '>') c++;
-                    else c--;
+                    if (symbol == '>')
+                        c++;
+                    else
+                        c--;
                     i++;
-                    symbol = (char) file_string[i];
+                    symbol = (char)file_string[i];
                 }
                 i--;
                 fprintf(transpiled, "/*Starting right move level 1 optimization*/\n");
-                fprintf(transpiled, "idx+=%d;\n", c);
+                fprintf(transpiled, "idx+=(%d);\n", c);
                 fprintf(transpiled, "/*Ending right move level 1 optimization*/\n");
-            } else fprintf(transpiled, "idx++;\n");
-            
+            }
+            else
+            {
+                if (symbol == '>') fprintf(transpiled, "idx++;\n");
+                else fprintf(transpiled, "idx--;\n");
+            }
+
             fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
             fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
-            
+
             break;
 
-        case '<':
-            if (optimization[1]) //(0) //change to 0 for base result generation with unitTest.c
-            {
-                while (symbol == '<' || symbol == '>')
-                {
-                    if (symbol == '>') c++;
-                    else c--;
-                    i++;
-                    symbol = (char) file_string[i];
-                }
-                i--;
-                fprintf(transpiled, "/*Starting left move level 1 optimization*/\n");
-                fprintf(transpiled, "idx-=%d;\n", c);
-                fprintf(transpiled, "/*Starting right move level 1 optimization*/\n");
-            } else fprintf(transpiled, "idx--;\n");
-
-            fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
-            fprintf(transpiled, "printf(\"idx less than zero\"); return -1;}\n");
-            
-            break;
-            
         case ',':
             fprintf(transpiled, "if (input_pointer <= 255) {\n");
             fprintf(transpiled, "cells[idx] = input[input_pointer];\n");
@@ -488,23 +405,23 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             fprintf(transpiled, "} else {\n");
             fprintf(transpiled, "printf(\"Insufficient input length\"); return -1;}\n");
             break;
-        
+
         case '.':
-            fprintf(transpiled,"if(outputIdx > 1024) {printf(\"insuficient output length\"); return -1;}\n");
-            fprintf(transpiled,"output[outputIdx] = cells[idx];\n");
-            fprintf(transpiled,"outputIdx++;\n");
+            fprintf(transpiled, "if(outputIdx > 1024) {printf(\"insuficient output length\"); return -1;}\n");
+            fprintf(transpiled, "output[outputIdx] = cells[idx];\n");
+            fprintf(transpiled, "outputIdx++;\n");
             break;
-        
+
         case '[':
             fprintf(transpiled, "while (cells[idx] != 0) {\n");
             break;
-        
+
         case ']':
-           fprintf(transpiled, "}\n");
+            fprintf(transpiled, "}\n");
             break;
-        
+
         default:
-            //Skip
+            // Skip
             break;
         }
     }
@@ -515,8 +432,8 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     //fprintf(transpiled, "all_times[t] = log(all_times[t]);\n");
     fprintf(transpiled, "}\n"); //closing outer time loop
     */
-    
-    //exstract results
+
+    // exstract results
     fprintf(transpiled, "fprintf(result_file, \"Output: \");\n");
     fprintf(transpiled, "for (int i = 0; i < outputIdx; i++){\n");
     fprintf(transpiled, "fprintf(result_file,\"%%c\", (char) output[i]);\n");
@@ -524,7 +441,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     fprintf(transpiled, "fprintf(result_file, \"\\n\");\n");
     fprintf(transpiled, "fprintf(result_file, \"Result:\");\n");
     fprintf(transpiled, "for (int i = 0; i < cellCount ; i++){\n");
-    fprintf(transpiled, "if (i%%10 == 0) fprintf(result_file, \"\\n\");\n"); 
+    fprintf(transpiled, "if (i%%10 == 0) fprintf(result_file, \"\\n\");\n");
     fprintf(transpiled, "fprintf(result_file, \"[%%d]\",cells[i]);\n");
     fprintf(transpiled, "}\n");
     /*//comment in timer
@@ -533,7 +450,7 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     fprintf(transpiled, "for (int i = 0; i < time_measures; i++){\n");
     fprintf(transpiled, "fprintf(result_file, \"%%f, \", all_times[i]);\n");
     fprintf(transpiled, "sum_time += all_times[i];\n");
-    fprintf(transpiled, "}\n"); 
+    fprintf(transpiled, "}\n");
     fprintf(transpiled, "double mean_time = sum_time/(double)time_measures;\n");
     fprintf(transpiled, "fprintf(result_file, \"\\nMean: %%f\", mean_time);\n");
     fprintf(transpiled, "double std = 0;\n");
@@ -543,59 +460,65 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
     fprintf(transpiled, "std = sqrt(std / time_measures);\n");
     fprintf(transpiled, "fprintf(result_file, \" +- %%f dBs\", std);\n");
     */
-   
+
     fprintf(transpiled, "}"); // end of main
     fclose(transpiled);
 }
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv)
+{
     char *program_folder_path = "../BrainFuck_Programs";
     int time_measurements = 10;
 
     /*Loading in file*/
     char *file_name = argv[1];
     FILE *b_program = openFile(program_folder_path, file_name);
-    if (b_program == NULL) {printf("File not found\n"); return -1;}
+    if (b_program == NULL)
+    {
+        printf("File not found\n");
+        return -1;
+    }
     const int file_size = fsize(b_program);
-    
+
     /*Reading file to string*/
     char file_string[file_size];
     strcpy(file_string, "");
     const unsigned MAX_LENGTH = 256;
     char buffer[MAX_LENGTH];
-    while (fgets(buffer, MAX_LENGTH, b_program)) strcat(file_string, buffer);
+    while (fgets(buffer, MAX_LENGTH, b_program))
+        strcat(file_string, buffer);
     fclose(b_program);
 
     /*Parsing optimization options*/
     int optimization_count = 5;
-    //Testing option validity
-    if (argc != optimization_count+2)
+    // Testing option validity
+    if (argc != optimization_count + 2)
     {
         printf("You must parse exactly 5 optimization option numbers {1;0} for each number");
         return -1;
     }
-    for (int i = 2; i < argc; i++) //testing the input is numbers 0,1
+    for (int i = 2; i < argc; i++) // testing the input is numbers 0,1
     {
         char *endptr;
         long num = strtol(argv[i], &endptr, 10);
-        if (*endptr == '\0' && num >= 0 && num <= 1) continue;
-        printf("All optimization options must be 0 or 1 error: input %d is %s", i-2,argv[i]);
+        if (*endptr == '\0' && num >= 0 && num <= 1)
+            continue;
+        printf("All optimization options must be 0 or 1 error: input %d is %s", i - 2, argv[i]);
         return -1;
     }
 
-    //Parsing options
+    // Parsing options
     char optimizations[optimization_count];
     optimizations[0] = atoi(argv[2]);
     for (int i = 3; i < argc; i++)
     {
-        optimizations[i-2] = atoi(argv[i]);
+        optimizations[i - 2] = atoi(argv[i]);
     }
-    
+
     /*Creating new file to transpile into*/
     char *transpiled_folder_path = "../OptimizedTranspiling";
-    FILE *tranpiled_file = createFile(transpiled_folder_path,file_name, optimizations, optimization_count);
-    initFile(tranpiled_file, file_name, optimizations, optimization_count, time_measurements); //initializing file methods
-
+    FILE *tranpiled_file = createFile(transpiled_folder_path, file_name, optimizations, optimization_count);
+    initFile(tranpiled_file, file_name, optimizations, optimization_count, time_measurements); // initializing file methods
 
     /*Starting the transpiler*/
     transpiler(file_string, file_size, tranpiled_file, optimizations);
