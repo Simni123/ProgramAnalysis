@@ -275,17 +275,10 @@ void transpiler(char *file_string, const int file_size, FILE* transpiled, char *
             int cIdx = 100 - 1;
             int currentArray[100*2]; // change to cell count
             memset(currentArray, 0, 200*sizeof(int)); //chnage to cell count
-            printf("zero array:"); 
-            for (int k = 0; k < 200; k++) {
-                //currentArray[k] = 0;
-                printf("%d", currentArray[k]);
-            }
-            printf("\n");
            
 
             while (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-') 
             {
-                printf("currentArray[%d]: %d \n", cIdx,currentArray[cIdx]);
                 if (cIdx < 0 || cIdx > 199) {
                     printf("non compilable brainfuck program");
                     return;
