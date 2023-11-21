@@ -204,7 +204,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
 
         /*Level 3 Simple loop optimizations*/
         // if no sub loops, no input/output, all increments/decrements of P[start] add up to -1, we are running the loop body p[0] times
-        if /*(optimization[3] && symbol == '[')*/ (0) // change to 0
+        if (optimization[3] && symbol == '[') //(0) // change to 0
         {
             // Incrementing so we dont look at the start bracket.
             i++;
