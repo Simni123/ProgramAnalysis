@@ -185,16 +185,16 @@ int main()
 {
     compilePrograms();
 
-    //allTest("HelloWorld.txt", " ", 10, 100000);
+    allTest("HelloWorld.txt", " ", 10, 100000);
     //allTest("BubbleSourt.txt", "baabz", 10, 10000);
-    //allTest("BubbleSourt.txt", "this will be sorted", 10, 1000);
-    //allTest("Squares.txt", " ", 10, 1000);
+    allTest("BubbleSourt.txt", "this will be sorted", 10, 1000);
+    allTest("Squares.txt", " ", 10, 1000);
     //allTest("Mandelbrot.txt", " ", 10, 1); //Encounters bug in optimization
-    //allTest("Serpinski.txt", " ", 10, 10000);
-    //allTest("99Bottles.txt", " ", 1, 1); //output out of bounds
-    //allTest("WriteInBrainfuck.txt", "this is a test", 1, 1); //output out of bounds
-    //allTest("WrittenByBrainfuck.txt", " ", 1, 1); //output out of bounds
-    //allTest("CountInput.txt", "this text has 65 bytes\\n it has 14 words\\n moreover it has 3 lines\\n", 10, 10000);
+    allTest("Serpinski.txt", " ", 10, 10000);
+    allTest("99Bottles.txt", " ", 10, 1000);
+    allTest("WriteInBrainfuck.txt", "this is a test", 1, 1); //output out of bounds
+    allTest("WrittenByBrainfuck.txt", " ", 1, 1); //output out of bounds
+    allTest("CountInput.txt", "this text has 65 bytes\\n it has 14 words\\n moreover it has 3 lines\\n", 10, 10000);
     
     return 0;
 }

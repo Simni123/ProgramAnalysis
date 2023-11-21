@@ -106,7 +106,7 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
     int loop_array[100];
     memset(loop_array, 0, 100*sizeof(int));
     // Output array
-    int outputLimit = 8192;
+    int outputLimit = 16384;
     unsigned char output[outputLimit];
     memset(output, 0, outputLimit*sizeof(char));
     int outputIdx = 0;

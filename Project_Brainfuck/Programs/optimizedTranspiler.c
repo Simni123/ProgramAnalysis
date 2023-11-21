@@ -178,7 +178,7 @@ void initFile(FILE *transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
     fprintf(transpiled, "memset(cells, 0, cellCount*sizeof(char));\n");
     fprintf(transpiled, "int idx = 0;\n");
-    fprintf(transpiled, "int outputLimit = 8192;\n");
+    fprintf(transpiled, "int outputLimit = 16384;\n");
     fprintf(transpiled, "unsigned char output[outputLimit];\n");
     fprintf(transpiled, "memset(output, 0, outputLimit*sizeof(char));\n");
     fprintf(transpiled, "int outputIdx = 0;\n");
@@ -421,7 +421,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
             break;
 
         case '.':
-            fprintf(transpiled, "if(outputIdx > outputLimit) {printf(\"insuficient output length\"); return -1;}\n");
+            fprintf(transpiled, "if(outputIdx > outputLimit) {printf(\"insuficient output length: %d\\n \", outputIdx); return -1;}\n");
             fprintf(transpiled, "output[outputIdx] = cells[idx];\n");
             fprintf(transpiled, "outputIdx++;\n");
             break;
