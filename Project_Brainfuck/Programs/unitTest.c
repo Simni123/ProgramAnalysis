@@ -26,12 +26,25 @@ void compilePrograms() {
     command("gcc interpreter.c -o interpreter");
 }
 
-void executeInterpretor(char *program, char *input) {
-    char cmd_string[sizeof("interpreter.exe ") + sizeof(program) + sizeof(input) + 1];
+void executeInterpretor(char *program, char *input, int time_measures, int time_reps) {
+    char cmd_string[1024];
+    //passing time options to string
+    char time_measures_str[512];
+    char time_reps_str[512];
+    sprintf(time_measures_str, "%d", time_measures);
+    sprintf(time_reps_str, "%d", time_reps);
+
+    //collecting command
     strcpy(cmd_string, "interpreter.exe ");
     strcat(cmd_string, program);
     strcat(cmd_string, " ");
+    strcat(cmd_string, " \"");
     strcat(cmd_string, input);
+    strcat(cmd_string, "\" ");
+    strcat(cmd_string, " ");
+    strcat(cmd_string, time_measures_str);
+    strcat(cmd_string, " ");
+    strcat(cmd_string, time_reps_str);
     command(cmd_string);
 }
 
@@ -71,7 +84,7 @@ void executeTranspiler(char *program, char *input) {
     changeDir("Programs");
 }
 
-int executeOptimizedTranspiler(char *program, char *input, int *optimization, int optimization_count) {
+int executeOptimizedTranspiler(char *program, char *input, int *optimization, int optimization_count, int time_measures, int time_reps, char compiler) {
     int fail = 0;
     char cmd_string[1024];
     strcpy(cmd_string, "optimizedTranspiler.exe ");
@@ -106,21 +119,40 @@ int executeOptimizedTranspiler(char *program, char *input, int *optimization, in
     }
     strcat(optimization_string, "]");
 
+    //adding compiler option
+    char compiler_str[4];
+    if (compiler) strcpy(compiler_str, "-O3");
+    else strcpy(compiler_str, "-O1");
     /*Compiling tranpiled file*/
+    //Todo: add optimiation -O0 or -O3
     strcpy(cmd_string, "gcc ");
     strcat(cmd_string, token);
     strcat(cmd_string, optimization_string);
-    strcat(cmd_string, ".c -o ");
+    strcat(cmd_string, ".c ");
+    strcat(cmd_string, compiler_str);
+    strcat(cmd_string, " -o ");
     strcat(cmd_string, token);
     strcat(cmd_string, optimization_string);
     fail = max(command(cmd_string),fail);
+
+    //passing time options to string
+    char time_measures_str[512];
+    char time_reps_str[512];
+    sprintf(time_measures_str, "%d", time_measures);
+    sprintf(time_reps_str, "%d", time_reps);
 
     /*Running transpiled executable*/
     strcpy(cmd_string, token);
     strcat(cmd_string, optimization_string);
     strcat(cmd_string, ".exe");
     strcat(cmd_string, " ");
+    strcat(cmd_string, " \"");
     strcat(cmd_string, input);
+    strcat(cmd_string, "\" ");
+    strcat(cmd_string, " ");
+    strcat(cmd_string, time_measures_str);
+    strcat(cmd_string, " ");
+    strcat(cmd_string, time_reps_str);
     fail = max(command(cmd_string),fail);
 
     /*Returning to programs folder*/
@@ -129,7 +161,7 @@ int executeOptimizedTranspiler(char *program, char *input, int *optimization, in
     return fail;
 }
 
-void executeAllOptimizedTranspilers(char *program, char *input) {
+void executeAllOptimizedTranspilers(char *program, char *input, int time_measures, int time_reps) {
     int optimization_count = 5;
     int optimizations[optimization_count];
     int idx = 0;
@@ -140,7 +172,7 @@ void executeAllOptimizedTranspilers(char *program, char *input) {
         int fail = 1;
         while (fail)
         {
-            fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count);
+            fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count, time_measures, time_reps, 0);
         }
         
         //generate new binary number
@@ -157,20 +189,49 @@ void executeAllOptimizedTranspilers(char *program, char *input) {
     }
 }
 
-void allTest(char *program, char *input) {
-    executeTranspiler(program, input);
+void executeBestOptimizedTranspiler(char *program, char *input, int time_measures, int time_reps) {
+    int optimization_count = 5;
+    int optimizations[optimization_count];
+    int idx = 0;
+    memset(optimizations,0,optimization_count*sizeof(int));
+    for (int i = 0; i < optimization_count; i++)
+    {
+        optimizations[i] = 1;
+    }
 
-    executeInterpretor(program, input);
+    int fail = 1;
+    while (fail)
+    {
+        fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count, time_measures, time_reps, 0);
+    }
+    fail = 1;
+    while (fail)
+    {
+        fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count, time_measures, time_reps, 1);
+    }
+    
+    //generate new binary number
+    int carry = 1;
+    int i = optimization_count-1;
+}
 
-    executeAllOptimizedTranspilers(program, input);
+void allTest(char *program, char *input, int time_measures, int interpret_time_reps) {
+    //Todo: add result path parssing
+    executeInterpretor(program, input, time_measures, interpret_time_reps);
+
+    //executeTranspiler(program, input);
+
+    //executeAllOptimizedTranspilers(program, input, time_measures, interpret_time_reps*10);
+
+    executeBestOptimizedTranspiler(program, input, time_measures, interpret_time_reps*10);
 }
 
 int main()
 {
     compilePrograms();
 
-    allTest("HelloWorld.txt", "");
-    allTest("BubbleSourt.txt", "baabz");
-    allTest("Squares.txt", "");
+    allTest("HelloWorld.txt", " ", 10, 1000);
+    allTest("BubbleSourt.txt", "baabz", 10, 1000);
+    allTest("Squares.txt", " ", 10, 100);
     return 0;
 }

@@ -3,6 +3,9 @@
 #include <unistd.h>
 #include <time.h>
 #include <math.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 
 FILE *openFile(char *folder_path, char *file_name)
 {
@@ -89,7 +92,7 @@ FILE *createFile(char *file_path, char *file_name)
     return tFile;
 }
 
-void interpreter(const int cellCount, char *file_string, const int file_size, char *input, int input_size, FILE *output_file, int time_measures)
+void interpreter(const int cellCount, char *file_string, const int file_size, char *input, int input_size, FILE *output_file, int time_measures, int time_reps)
 {
     int data_pointer = 0;
     int input_pointer = 0;
@@ -113,7 +116,7 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
         clock_t start_time, end_time;
         start_time = clock();
 
-        for (int k = 0; k < 1000; k++)
+        for (int k = 0; k < time_reps; k++)
         {
             // Setting up run
             data_pointer = 0;
@@ -229,12 +232,12 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
                     break;
                 }
             }
-        }
+        } //end of rep_per_time_mesure
         end_time = clock();
 
         // Collecting time
         printf("start-end time: %f, %f\n", (double) start_time/CLOCKS_PER_SEC, (double) end_time/CLOCKS_PER_SEC);
-        all_times[t] = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+        all_times[t] = ((double)(end_time - start_time) / CLOCKS_PER_SEC) / time_reps;
         all_times[t] = log(all_times[t]);
     }
 
@@ -262,20 +265,25 @@ void interpreter(const int cellCount, char *file_string, const int file_size, ch
         sum_time += all_times[i];
     }
     double mean_time = sum_time / (double)time_measures;
-
     fprintf(output_file, "\nMean: %f", mean_time);
+
     double std = 0;
     for (int i = 0; i < time_measures; i++)
     {
         std += pow(all_times[i] - mean_time, 2);
     }
     std = sqrt(std / time_measures);
-
     fprintf(output_file, " +- %f dBs", std);
 }
 
 int main(int argc, char **argv)
 {
+    if (argc != 5)
+    {
+        printf("the interpretor need exactly 'Brainfuck_file input_string(non-empty use \" \" as empty) time_mesurements repetitions_per_time_mesurement'\n");
+        return -1;
+    }
+
     char *folder_path = "../BrainFuck_Programs";
     char *output_folder_path = "../UnitTestFiles";
     int time_measures = 10;
@@ -305,13 +313,15 @@ int main(int argc, char **argv)
     /*Starting the interpreter*/
     char *input;
     int input_size = 0;
-    if (argc == 3)
-    {
-        input = argv[2];
-        input_size = strlen(input);
-    }
+    int time_reps = 0;
+    int time_mesures = 0; 
+    input = argv[2];
+    input_size = strlen(input);
+    time_mesures = atoi(argv[3]);
+    time_reps = atoi(argv[4]);
+    
     const int cellCount = 100;
-    interpreter(cellCount, file_string, file_size, input, input_size, output_file, time_measures);
+    interpreter(cellCount, file_string, file_size, input, input_size, output_file, time_mesures, time_reps);
 
     return 0;
 }
