@@ -59,7 +59,7 @@ FILE *createFile(char *file_path, char *file_name, char *optimization, int optim
     token = strtok(file_name_sub, deli);
 
     /*adding the optimization string on the file*/
-    char optimization_string[optimization_count + 2];
+    char optimization_string[1024];
     strcpy(optimization_string, "[");
     for (int i = 0; i < optimization_count; i++)
     {
@@ -107,6 +107,8 @@ void initFile(FILE *transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "#include <string.h>\n");
     fprintf(transpiled, "#include <time.h>\n");
     fprintf(transpiled, "#include <math.h>\n");
+    fprintf(transpiled, "#include <stdlib.h>\n");
+    fprintf(transpiled, "#include <ctype.h>\n");
     fprintf(transpiled, "\n");
     fprintf(transpiled, "\n");
 
@@ -122,7 +124,7 @@ void initFile(FILE *transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "token = strtok(file_name_sub, deli);\n");
     fprintf(transpiled, "\n");
     fprintf(transpiled, "/*adding the optimization string on the file*/\n");
-    fprintf(transpiled, "char optimization_string[%d+2];\n", optimization_count);
+    fprintf(transpiled, "char optimization_string[256];\n", optimization_count);
     fprintf(transpiled, "strcpy(optimization_string, \"[\");\n");
     for (int i = 0; i < optimization_count; i++)
     {
@@ -144,18 +146,31 @@ void initFile(FILE *transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "FILE *tFile = fopen(transpiled_file_path, \"w+\");\n");
     fprintf(transpiled, "if (tFile == NULL) { printf(\"Could not create file\\n\"); return NULL;}\n");
     fprintf(transpiled, "return tFile;\n");
-    fprintf(transpiled, "};\n");
+    fprintf(transpiled, "}\n");
 
     /*adding main method*/
     fprintf(transpiled, "int main (int argc, char **argv) {\n");
-    /*Creating new file to store result*/
-    fprintf(transpiled, "char *result_folder_path = \"../UnitTestFiles\";\n");
+    //testing correct input
+    fprintf(transpiled, "if (argc != 5) {\n");
+    fprintf(transpiled, "printf(\"the interpretor need exactly 'result_folder_in_UnitTestFiles input_string(non-empty use \" \" as empty) time_mesurements repetitions_per_time_mesurement'\\n\");\n");
+    fprintf(transpiled, "return -1;}\n");
+    //Creating new file to store result
+    fprintf(transpiled, "char result_folder_path[1024];\n");
+    fprintf(transpiled, "strcpy(result_folder_path, \"../UnitTestFiles/\");\n");
+    fprintf(transpiled, "strcat(result_folder_path, argv[1]);\n");
     fprintf(transpiled, "FILE *result_file = createFile(result_folder_path,\"%s\");\n", file_name);
-
+    //exstracting brainfuck input
     fprintf(transpiled, "int input_pointer = 0;\n");
     fprintf(transpiled, "char *input;\n");
     fprintf(transpiled, "int input_len = 0;\n");
-    fprintf(transpiled, "if (argc == 2) {input = argv[1]; input_len = strlen(input);}\n");
+    fprintf(transpiled, "input = argv[2];\n");
+    fprintf(transpiled, "input_len = strlen(input);\n");
+    //exstracting timer options
+    fprintf(transpiled, "int time_reps = 0;\n");
+    fprintf(transpiled, "int time_mesures = 0;\n");
+    fprintf(transpiled, "time_mesures = atoi(argv[3]);\n");
+    fprintf(transpiled, "time_reps = atoi(argv[4]);\n");
+    //initializying brinfuck invironment
     fprintf(transpiled, "const int cellCount = 100;\n");
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
     fprintf(transpiled, "memset(cells, 0, cellCount*sizeof(char));\n");
@@ -163,30 +178,23 @@ void initFile(FILE *transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "unsigned char output[1024];\n");
     fprintf(transpiled, "memset(output, 0, 1024*sizeof(char));\n");
     fprintf(transpiled, "int outputIdx = 0;\n");
-
-    /*Adding the timer*/
-    /*//comment in timer
-    fprintf(transpiled, "int time_measures = %d;\n", time_measures);
-    fprintf(transpiled, "double all_times[time_measures];\n");
-    fprintf(transpiled, "for (int t = 0; t < time_measures; t++) {\n");
-    fprintf(transpiled, "clock_t start_time, end_time;\n");
-    fprintf(transpiled, "start_time = clock();\n");
-
-    fprintf(transpiled, "for (int k = 0; k < 100000; k++) {\n");
-
-
-    //Resetting all state variables
-    fprintf(transpiled, "input_pointer = 0;\n");
-    fprintf(transpiled, "memset(cells, 0, cellCount);\n");
-    fprintf(transpiled, "idx = 0;\n");
-    fprintf(transpiled, "memset(output, 0, sizeof(output));\n");
-    fprintf(transpiled, "outputIdx = 0;\n");
-    */
 }
 
 void transpiler(char *file_string, const int file_size, FILE *transpiled, char *optimization)
 {
-
+    //initializing timer loops
+    fprintf(transpiled, "double all_times[time_mesures];\n");
+    fprintf(transpiled, "for (size_t t = 0; t < time_mesures; t++){\n");
+    fprintf(transpiled, "clock_t start_time, end_time;\n");
+    fprintf(transpiled, "start_time = clock();\n");
+    fprintf(transpiled, "for (int k = 0; k < time_reps; k++) {\n");
+    //reinitializing brainfuck invironment
+    fprintf(transpiled, "input_pointer = 0;\n");
+    fprintf(transpiled, "memset(cells, 0, cellCount*sizeof(char));\n");
+    fprintf(transpiled, "idx = 0;\n");
+    fprintf(transpiled, "memset(output, 0, 1024*sizeof(char));\n");
+    fprintf(transpiled, "outputIdx = 0;\n");
+    
     /*Runnning through program*/
     for (int i = 0; i < file_size; i++)
     {
@@ -425,15 +433,15 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
             break;
         }
     }
-    /* //comment in timer
-    fprintf(transpiled, "}\n"); //closing inner time loop
+    //ending timer loops
+    fprintf(transpiled, "} //end of rep_per_time_mesure\n");
     fprintf(transpiled, "end_time = clock();\n");
-    fprintf(transpiled, "all_times[t] = (double) (end_time-start_time)/CLOCKS_PER_SEC;\n");
-    //fprintf(transpiled, "all_times[t] = log(all_times[t]);\n");
-    fprintf(transpiled, "}\n"); //closing outer time loop
-    */
+    fprintf(transpiled, "printf(\"start-end time: %%f, %%f\\n\", (double) start_time/CLOCKS_PER_SEC, (double) end_time/CLOCKS_PER_SEC);\n");
+    fprintf(transpiled, "all_times[t] = ((double)(end_time - start_time) / CLOCKS_PER_SEC) / (double) time_reps;\n");
+    fprintf(transpiled, "all_times[t] = log(all_times[t]);\n");
+    fprintf(transpiled, "} //end of mesurements\n");
 
-    // exstract results
+    //exstract results
     fprintf(transpiled, "fprintf(result_file, \"Output: \");\n");
     fprintf(transpiled, "for (int i = 0; i < outputIdx; i++){\n");
     fprintf(transpiled, "fprintf(result_file,\"%%c\", (char) output[i]);\n");
@@ -444,29 +452,32 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
     fprintf(transpiled, "if (i%%10 == 0) fprintf(result_file, \"\\n\");\n");
     fprintf(transpiled, "fprintf(result_file, \"[%%d]\",cells[i]);\n");
     fprintf(transpiled, "}\n");
-    /*//comment in timer
+    
+    //exstracting time mesurements
+    fprintf(transpiled, "if (time_reps != 1 || time_mesures != 1) {\n");
     fprintf(transpiled, "double sum_time = 0;\n");
     fprintf(transpiled, "fprintf(result_file, \"\\nTimes: \");\n");
-    fprintf(transpiled, "for (int i = 0; i < time_measures; i++){\n");
+    fprintf(transpiled, "for (int i = 0; i < time_mesures; i++){\n");
     fprintf(transpiled, "fprintf(result_file, \"%%f, \", all_times[i]);\n");
-    fprintf(transpiled, "sum_time += all_times[i];\n");
-    fprintf(transpiled, "}\n");
-    fprintf(transpiled, "double mean_time = sum_time/(double)time_measures;\n");
+    fprintf(transpiled, "sum_time += all_times[i];}\n");
+    fprintf(transpiled, "double mean_time = sum_time / (double)time_mesures;\n");
     fprintf(transpiled, "fprintf(result_file, \"\\nMean: %%f\", mean_time);\n");
+    
+    //exstracing std
     fprintf(transpiled, "double std = 0;\n");
-    fprintf(transpiled, "for (int i = 0; i < time_measures; i++){\n");
-    fprintf(transpiled, "std += pow(all_times[i]-mean_time, 2);\n");
-    fprintf(transpiled, "}\n");
-    fprintf(transpiled, "std = sqrt(std / time_measures);\n");
+    fprintf(transpiled, "for (int i = 0; i < time_mesures; i++){\n");
+    fprintf(transpiled, "std += pow(all_times[i] - mean_time, 2);}\n");
+    fprintf(transpiled, "std = sqrt(std / time_mesures);\n");
     fprintf(transpiled, "fprintf(result_file, \" +- %%f dBs\", std);\n");
-    */
-
+    fprintf(transpiled, "}"); // end of if repeate
+    
     fprintf(transpiled, "}"); // end of main
     fclose(transpiled);
 }
 
 int main(int argc, char **argv)
 {
+    
     char *program_folder_path = "../BrainFuck_Programs";
     int time_measurements = 10;
 
@@ -494,7 +505,7 @@ int main(int argc, char **argv)
     // Testing option validity
     if (argc != optimization_count + 2)
     {
-        printf("You must parse exactly 5 optimization option numbers {1;0} for each number");
+        printf("You must parse exactly '(Brain_fuck_program) (5 optimization option numbers {1;0} for each number)'");
         return -1;
     }
     for (int i = 2; i < argc; i++) // testing the input is numbers 0,1
