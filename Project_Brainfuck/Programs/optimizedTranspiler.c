@@ -165,18 +165,22 @@ void initFile(FILE *transpiled, char *file_name, char *optimization, int optimiz
     fprintf(transpiled, "int input_len = 0;\n");
     fprintf(transpiled, "input = argv[2];\n");
     fprintf(transpiled, "input_len = strlen(input);\n");
+    fprintf(transpiled, "fprintf(result_file, \"Input: \");\n");
+    fprintf(transpiled, "fprintf(result_file, input);\n");
+    fprintf(transpiled, "fprintf(result_file, \"\\n\");\n");
     //exstracting timer options
     fprintf(transpiled, "int time_reps = 0;\n");
     fprintf(transpiled, "int time_mesures = 0;\n");
     fprintf(transpiled, "time_mesures = atoi(argv[3]);\n");
     fprintf(transpiled, "time_reps = atoi(argv[4]);\n");
     //initializying brinfuck invironment
-    fprintf(transpiled, "const int cellCount = 100;\n");
+    fprintf(transpiled, "const int cellCount = 500;\n");
     fprintf(transpiled, "unsigned char cells[cellCount];\n");
     fprintf(transpiled, "memset(cells, 0, cellCount*sizeof(char));\n");
     fprintf(transpiled, "int idx = 0;\n");
-    fprintf(transpiled, "unsigned char output[1024];\n");
-    fprintf(transpiled, "memset(output, 0, 1024*sizeof(char));\n");
+    fprintf(transpiled, "int outputLimit = 8192;\n");
+    fprintf(transpiled, "unsigned char output[outputLimit];\n");
+    fprintf(transpiled, "memset(output, 0, outputLimit*sizeof(char));\n");
     fprintf(transpiled, "int outputIdx = 0;\n");
 }
 
@@ -192,7 +196,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
     fprintf(transpiled, "input_pointer = 0;\n");
     fprintf(transpiled, "memset(cells, 0, cellCount*sizeof(char));\n");
     fprintf(transpiled, "idx = 0;\n");
-    fprintf(transpiled, "memset(output, 0, 1024*sizeof(char));\n");
+    fprintf(transpiled, "memset(output, 0, outputLimit*sizeof(char));\n");
     fprintf(transpiled, "outputIdx = 0;\n");
     
     /*Runnning through program*/
@@ -206,6 +210,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
         // if no sub loops, no input/output, all increments/decrements of P[start] add up to -1, we are running the loop body p[0] times
         if (optimization[3] && symbol == '[') //(0) // change to 0
         {
+            // WE HAVE A BUG!!!! - use gcc .\optimizedTranspiler.c -> ./a.exe Mandelbrot.txt 0 0 0 1 0 too see it when gcc .\Mandelbrot[00010].c -> ./a.exe O0 " " 1 1
             // Incrementing so we dont look at the start bracket.
             i++;
             symbol = (char)file_string[i];
@@ -255,6 +260,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
                 {
                     multiplier_movements[multiplier_index] = movements;
                     multiplier_index++;
+                    if (multiplier_index > 1000) printf("insufficent multiplier_movements array size");
                     // rerole symbol after while loop fence problem
                     i--;
                     symbol = (char)file_string[i];
@@ -277,7 +283,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
                 fprintf(transpiled, "/*Starting loop optimization*/\n");
                 for (int j = 0; j < multiplier_index; j++)
                 {
-                    fprintf(transpiled, "if(idx+%d < 0 || idx+%d > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", multiplier_movements[j], multiplier_movements[j]);
+                    fprintf(transpiled, "if(idx+%d < 0 || idx+%d > cellCount) {printf(\"insufficient cell count - multiplier movement %d\\n\"); return -1;} \n", multiplier_movements[j], multiplier_movements[j], multiplier_movements[j]);
                     fprintf(transpiled, "cells[idx+%d] += %d*cells[idx]; \n", multiplier_movements[j], multipliers[j]);
                 }
                 fprintf(transpiled, "cells[idx] = 0;\n");
@@ -328,7 +334,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
             {
                 if (currentArray[j] != 0)
                 {
-                    fprintf(transpiled, "if(idx+(%d) < 0 || idx+(%d) > cellCount) {printf(\"insufficient cell count\"); return -1;} \n", j - 99, currentArray[j]);
+                    fprintf(transpiled, "if(idx+(%d) < 0 || idx+(%d) > cellCount) {printf(\"insufficient cell count - currentArray\"); return -1;} \n", j - 99, currentArray[j]);
                     fprintf(transpiled, "cells[idx+(%d)] = cells[idx+(%d)]+(%d); \n", j - 99, j - 99, currentArray[j]);
                 }
             }
@@ -415,7 +421,7 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
             break;
 
         case '.':
-            fprintf(transpiled, "if(outputIdx > 1024) {printf(\"insuficient output length\"); return -1;}\n");
+            fprintf(transpiled, "if(outputIdx > outputLimit) {printf(\"insuficient output length\"); return -1;}\n");
             fprintf(transpiled, "output[outputIdx] = cells[idx];\n");
             fprintf(transpiled, "outputIdx++;\n");
             break;

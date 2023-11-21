@@ -22,7 +22,6 @@ int command(char *cmd) {
 
 void compilePrograms() {
     command("gcc optimizedTranspiler.c -o optimizedTranspiler");
-    command("gcc transpiler.c -o transpiler");
     command("gcc interpreter.c -o interpreter");
 }
 
@@ -46,42 +45,6 @@ void executeInterpretor(char *program, char *input, int time_measures, int time_
     strcat(cmd_string, " ");
     strcat(cmd_string, time_reps_str);
     command(cmd_string);
-}
-
-void executeTranspiler(char *program, char *input) {
-    char cmd_string[1024];
-    strcpy(cmd_string, "transpiler.exe ");
-    strcat(cmd_string, program);
-    command(cmd_string);
-
-    /*Changing directory to NaiveTranspiling*/
-    changeDir("..");
-    changeDir("NaiveTranspiling");
-
-    /*Creating a subfile name without .type*/
-    char file_name_sub[1024]; //WTF whry *2 - find out
-    strcpy(file_name_sub, program);
-    const char deli[] = ".";
-    char *token;
-    token = strtok(file_name_sub, deli);
-
-    /*Compiling tranpiled file*/
-    strcpy(cmd_string, "gcc ");
-    strcat(cmd_string, token);
-    strcat(cmd_string, ".c -o ");
-    strcat(cmd_string, token);
-    command(cmd_string);
-
-    /*Running transpiled executable*/
-    strcpy(cmd_string, token);
-    strcat(cmd_string, ".exe");
-    strcat(cmd_string, " ");
-    strcat(cmd_string, input);
-    command(cmd_string);
-
-    /*Returning to programs folder*/
-    changeDir("..");
-    changeDir("Programs");
 }
 
 int executeOptimizedTranspiler(char *program, char *input, int *optimization, int optimization_count, int time_measures, int time_reps, char compiler) {
@@ -210,12 +173,9 @@ void executeBestOptimizedTranspiler(char *program, char *input, int time_measure
 }
 
 void allTest(char *program, char *input, int time_measures, int interpret_time_reps) {
-    //Todo: add result path parssing
     executeInterpretor(program, input, time_measures, interpret_time_reps);
 
-    //executeTranspiler(program, input);
-
-    executeAllOptimizedTranspilers(program, input, 1, 1);
+    //executeAllOptimizedTranspilers(program, input, 1, 1);
 
     executeBestOptimizedTranspiler(program, input, time_measures, interpret_time_reps*10, 0); //O0
     executeBestOptimizedTranspiler(program, input, time_measures, interpret_time_reps*10, 1); //O3
@@ -225,8 +185,16 @@ int main()
 {
     compilePrograms();
 
-    allTest("HelloWorld.txt", " ", 10, 10000);
-    allTest("BubbleSourt.txt", "baabz", 10, 1000);
-    allTest("Squares.txt", " ", 10, 100);
+    //allTest("HelloWorld.txt", " ", 10, 100000);
+    //allTest("BubbleSourt.txt", "baabz", 10, 10000);
+    //allTest("BubbleSourt.txt", "this will be sorted", 10, 1000);
+    //allTest("Squares.txt", " ", 10, 1000);
+    //allTest("Mandelbrot.txt", " ", 10, 1); //Encounters bug in optimization
+    //allTest("Serpinski.txt", " ", 10, 10000);
+    //allTest("99Bottles.txt", " ", 1, 1); //output out of bounds
+    //allTest("WriteInBrainfuck.txt", "this is a test", 1, 1); //output out of bounds
+    //allTest("WrittenByBrainfuck.txt", " ", 1, 1); //output out of bounds
+    //allTest("CountInput.txt", "this text has 65 bytes\\n it has 14 words\\n moreover it has 3 lines\\n", 10, 10000);
+    
     return 0;
 }
