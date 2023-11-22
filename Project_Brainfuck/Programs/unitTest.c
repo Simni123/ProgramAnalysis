@@ -194,7 +194,7 @@ void executeDataCollector(char *program, char *input, int time_measures, int int
 }
 
 void allTest(char *program, char *input, int time_measures, int interpret_time_reps) {
-    //executeAllOptimizedTranspilers(program, input, 1, 1);
+    executeAllOptimizedTranspilers(program, input, 1, 1);
 
     executeDataCollector(program, input, time_measures, interpret_time_reps);
 }
@@ -210,9 +210,11 @@ int main()
     //allTest("Mandelbrot.txt", " ", 10, 1); //Encounters bug in optimization
     allTest("Serpinski.txt", " ", 10, 10000);
     allTest("99Bottles.txt", " ", 10, 1000);
-    allTest("WriteInBrainfuck.txt", "this is a test", 1, 1); //output out of bounds
-    allTest("WrittenByBrainfuck.txt", " ", 1, 1); //output out of bounds
+    allTest("WriteInBrainfuck.txt", "this is a test", 10, 10000); //output out of bounds
+    allTest("WrittenByBrainfuck.txt", " ", 10, 10000); //output out of bounds
     allTest("CountInput.txt", "this text has 65 bytes\\n it has 14 words\\n moreover it has 3 lines\\n", 10, 10000);
+    allTest("LargeShiftLoop.txt", " ", 10, 100000);
+    allTest("LargeAddition.txt", " ", 10, 100000);
     
     return 0;
 }

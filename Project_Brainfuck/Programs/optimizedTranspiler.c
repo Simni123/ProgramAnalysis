@@ -222,8 +222,8 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
 
             int multiplier_index = 0;
             int multiplier_movements[1000];
-            int multipliers[1000];
-            memset(multipliers, 0, 1000 * sizeof(int));
+            unsigned char multipliers[1000];
+            memset(multipliers, 0, 1000 * sizeof(char));
             memset(multiplier_movements, 0, 1000 * sizeof(int));
             while (symbol != ']')
             {
