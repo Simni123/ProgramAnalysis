@@ -109,8 +109,9 @@ int executeOptimizedTranspiler(char *program, char *input, int *optimization, in
     strcat(cmd_string, optimization_string);
     strcat(cmd_string, ".exe");
     strcat(cmd_string, " ");
-    if (time_measures != 1 || time_reps != 1) strcat(cmd_string, compiler_str); //saving times in O0/O3 folder
-    else strcat(cmd_string, "UnitTest"); //Saving no times only result in UnitTest folder
+    if (time_measures == 1 || time_reps == 1) strcat(cmd_string, "UnitTest"); //Saving no times only result in UnitTest folder
+    else if ((optimization[0] != 0 || optimization[1] != 0 || optimization[2] != 0 || optimization[3] != 0 || optimization[4] != 0)) strcat(cmd_string, "Optimized"); //saving the optimized time
+    else strcat(cmd_string, compiler_str); //saving times in O0/O3 folder
     strcat(cmd_string, " ");
     strcat(cmd_string, " \"");
     strcat(cmd_string, input);
@@ -155,11 +156,14 @@ void executeAllOptimizedTranspilers(char *program, char *input, int time_measure
     }
 }
 
-void executeBestOptimizedTranspiler(char *program, char *input, int time_measures, int time_reps, char compiler) {
+void executeDataCollector(char *program, char *input, int time_measures, int interpret_time_reps){
+    executeInterpretor(program, input, time_measures, interpret_time_reps);
+
     int optimization_count = 5;
     int optimizations[optimization_count];
     int idx = 0;
     memset(optimizations,0,optimization_count*sizeof(int));
+    //Optimized O0
     for (int i = 0; i < optimization_count; i++)
     {
         optimizations[i] = 1;
@@ -168,17 +172,31 @@ void executeBestOptimizedTranspiler(char *program, char *input, int time_measure
     int fail = 1;
     while (fail)
     {
-        fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count, time_measures, time_reps, compiler);
+        fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count, time_measures, interpret_time_reps*10, 0);
     }
+
+    //NonOptimized O0
+    memset(optimizations,0,optimization_count*sizeof(int));
+    fail = 1;
+    while (fail)
+    {
+        fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count, time_measures, interpret_time_reps*10, 0);
+    }
+    
+    //NonOptimized O3
+    memset(optimizations,0,optimization_count*sizeof(int));
+    fail = 1;
+    while (fail)
+    {
+        fail = executeOptimizedTranspiler(program, input, optimizations, optimization_count, time_measures, interpret_time_reps*10, 1);
+    }
+
 }
 
 void allTest(char *program, char *input, int time_measures, int interpret_time_reps) {
-    executeInterpretor(program, input, time_measures, interpret_time_reps);
-
     //executeAllOptimizedTranspilers(program, input, 1, 1);
 
-    executeBestOptimizedTranspiler(program, input, time_measures, interpret_time_reps*10, 0); //O0
-    executeBestOptimizedTranspiler(program, input, time_measures, interpret_time_reps*10, 1); //O3
+    executeDataCollector(program, input, time_measures, interpret_time_reps);
 }
 
 int main()
