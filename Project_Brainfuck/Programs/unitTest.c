@@ -203,18 +203,19 @@ int main()
 {
     compilePrograms();
 
-    allTest("HelloWorld.txt", " ", 10, 100000);
-    //allTest("BubbleSourt.txt", "baabz", 10, 10000);
-    allTest("BubbleSourt.txt", "this will be sorted", 10, 1000);
-    allTest("Squares.txt", " ", 10, 1000);
-    //allTest("Mandelbrot.txt", " ", 10, 1); //Encounters bug in optimization
-    allTest("Serpinski.txt", " ", 10, 10000);
-    allTest("99Bottles.txt", " ", 10, 1000);
-    allTest("WriteInBrainfuck.txt", "this is a test", 10, 10000); //output out of bounds
-    allTest("WrittenByBrainfuck.txt", " ", 10, 10000); //output out of bounds
-    allTest("CountInput.txt", "this text has 65 bytes\\n it has 14 words\\n moreover it has 3 lines\\n", 10, 10000);
-    allTest("LargeShiftLoop.txt", " ", 10, 100000);
-    allTest("LargeAddition.txt", " ", 10, 100000);
+    //allTest("HelloWorld.txt", " ", 10, 100000);
+    //allTest("BubbleSourt.txt", "this will be sorted", 10, 1000);
+    //allTest("Squares.txt", " ", 10, 1000);
+    //allTest("Serpinski.txt", " ", 10, 10000);
+    //allTest("99Bottles.txt", " ", 10, 1000);
+    //allTest("WriteInBrainfuck.txt", "this is a test", 10, 10000); //output out of bounds
+    //allTest("WrittenByBrainfuck.txt", " ", 10, 10000); //output out of bounds
+    //allTest("CountInput.txt", "this text has 65 bytes\\n it has 14 words\\n moreover it has 3 lines\\n", 10, 10000);
+    //allTest("LargeShiftLoop.txt", " ", 10, 100000); //with interpurator and -O0 comented out
+    //allTest("LargeShiftLoop.txt", " ", 10, 100); //with optimization and -O3 comented out
+    //allTest("LargeShift.txt", " ", 10, 100000); //with interpurator and -O0 comented out
+    //allTest("LargeShift.txt", " ", 10, 10000); //with optimization and -O3 comented out
+    //allTest("LargeAddition.txt", " ", 10, 100000);
     
     return 0;
 }

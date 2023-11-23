@@ -304,13 +304,13 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
             // New level 2 optimizations
 
             // Making an array doubled
-            int cIdx = 100 - 1;
-            int currentArray[100 * 2];                  // change to cell count
-            memset(currentArray, 0, 200 * sizeof(int)); // chnage to cell count
+            int cIdx = 500 - 1;
+            int currentArray[500 * 2];                  // change to cell count
+            memset(currentArray, 0, 1000 * sizeof(int)); // chnage to cell count
 
             while (symbol == '>' || symbol == '<' || symbol == '+' || symbol == '-')
             {
-                if (cIdx < 0 || cIdx > 199)
+                if (cIdx < 0 || cIdx > 999)
                 {
                     printf("non compilable brainfuck program");
                     return;
@@ -330,18 +330,18 @@ void transpiler(char *file_string, const int file_size, FILE *transpiled, char *
             }
             i--;
             fprintf(transpiled, "/*Starting combined level 2 optimization*/\n");
-            for (int j = 0; j < 100 * 2; j++)
+            for (int j = 0; j < 500 * 2; j++)
             {
                 if (currentArray[j] != 0)
                 {
-                    fprintf(transpiled, "if(idx+(%d) < 0 || idx+(%d) > cellCount) {printf(\"insufficient cell count - currentArray\"); return -1;} \n", j - 99, currentArray[j]);
-                    fprintf(transpiled, "cells[idx+(%d)] = cells[idx+(%d)]+(%d); \n", j - 99, j - 99, currentArray[j]);
+                    fprintf(transpiled, "if(idx+(%d) < 0 || idx+(%d) > cellCount) {printf(\"insufficient cell count - currentArray\"); return -1;} \n", j - 499, currentArray[j]);
+                    fprintf(transpiled, "cells[idx+(%d)] = cells[idx+(%d)]+(%d); \n", j - 499, j - 499, currentArray[j]);
                 }
             }
-            if (cIdx != 99)
+            if (cIdx != 499)
             {
 
-                fprintf(transpiled, "idx += (%d);\n", cIdx - 99);
+                fprintf(transpiled, "idx += (%d);\n", cIdx - 499);
                 fprintf(transpiled, "if(idx > cellCount && idx < 0) {");
                 fprintf(transpiled, "printf(\"insufficient cellcount\"); return -1;}\n");
             }
